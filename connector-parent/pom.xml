@@ -40,6 +40,7 @@
     
     <modules>
         <module>h2</module>
+        <module>mysql</module>
     </modules>
     
     <dependencyManagement>
