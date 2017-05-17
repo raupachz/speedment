@@ -36,7 +36,7 @@ import com.speedment.runtime.core.component.sql.override.SqlStreamTerminatorComp
 import com.speedment.runtime.core.db.AsynchronousQueryResult;
 import com.speedment.runtime.core.db.DatabaseNamingConvention;
 import com.speedment.runtime.core.db.DbmsType;
-import com.speedment.runtime.core.db.SqlFunction;
+import com.speedment.common.function.sql.SqlFunction;
 import com.speedment.runtime.core.exception.SpeedmentException;
 import com.speedment.runtime.core.internal.manager.sql.SqlStreamTerminator;
 import com.speedment.runtime.core.internal.stream.builder.ReferenceStreamBuilder;

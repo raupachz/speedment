@@ -21,7 +21,7 @@
  */
 package com.speedment.runtime.core.internal.stream;
 
-import com.speedment.runtime.core.db.SqlFunction;
+import com.speedment.common.function.sql.SqlFunction;
 import com.speedment.runtime.core.exception.SpeedmentException;
 import com.speedment.runtime.core.stream.parallel.ParallelStrategy;
 

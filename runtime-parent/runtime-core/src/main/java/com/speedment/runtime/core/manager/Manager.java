@@ -21,7 +21,9 @@ import com.speedment.runtime.config.identifier.TableIdentifier;
 import com.speedment.runtime.core.exception.SpeedmentException;
 import com.speedment.runtime.field.Field;
 import com.speedment.runtime.field.trait.HasFinder;
+import java.sql.Connection;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -347,5 +349,5 @@ public interface Manager<ENTITY> {
     default <FK_ENTITY> Stream<ENTITY> findBackwardsBy(HasFinder<ENTITY, FK_ENTITY> fkField, FK_ENTITY fkEntity) {
         return finderBackwardsBy(fkField).apply(fkEntity);
     }
-
+    
 }

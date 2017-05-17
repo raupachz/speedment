@@ -16,6 +16,7 @@
  */
 package com.speedment.runtime.core.db;
 
+import com.speedment.common.function.sql.SqlFunction;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.stream.Stream;

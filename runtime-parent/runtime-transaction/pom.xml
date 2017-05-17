@@ -20,24 +20,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>com.speedment.common</groupId>
-        <artifactId>common-parent</artifactId>
+        <groupId>com.speedment.runtime</groupId>
+        <artifactId>runtime-parent</artifactId>
         <version>3.0.10-SNAPSHOT</version>
     </parent>
     
-    <artifactId>function</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <artifactId>runtime-transaction</artifactId>
     <packaging>bundle</packaging>
     
-    <name>Speedment - Common - Function</name>
+    <name>Speedment - Runtime - Transaction</name>
     <description>
-        A complement to the java.util and java.util.function packages that add
-        missing primitive specializations of common interfaces.
+        An module that contains support for transactions
     </description>
-    <url>https://www.github.com/speedment/speedment/wiki/Function/</url>
+    <url>https://www.github.com/speedment/speedment/wiki/DBModel/</url>
     
     <build>
         <plugins>
@@ -47,8 +46,8 @@
                 <configuration>
                     <instructions>
                         <Export-Package>
-                            com.speedment.common.function,
-                            com.speedment.common.function.sql
+                            com.speedment.runtime.transaction,
+                            com.speedment.runtime.transaction.exception
                         </Export-Package>
                     </instructions>
                 </configuration>
@@ -61,17 +60,55 @@
             <id>release</id>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                    </plugin>
-                    
-                    <plugin>
+                    <plugin><!-- Generate sources jar -->
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                    
+                    <plugin><!-- Generate javadoc jar -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
+    
+    <dependencies>
+        <!-- Common Dependencies -->
+        <dependency>
+            <groupId>com.speedment.common</groupId>
+            <artifactId>function</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.speedment.common</groupId>
+            <artifactId>invariant</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.speedment.common</groupId>
+            <artifactId>injector</artifactId>
+        </dependency>
+        
+        <!-- Runtime Dependencies -->
+        <dependency>
+            <groupId>com.speedment.runtime</groupId>
+            <artifactId>runtime-config</artifactId>
+            <version>${speedment.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.speedment.runtime</groupId>
+            <artifactId>runtime-core</artifactId>
+            <version>${speedment.version}</version>
+        </dependency>
+        
+        
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+    </dependencies>
 </project>

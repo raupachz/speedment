@@ -14,26 +14,32 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.speedment.runtime.core.db;
+package com.speedment.common.function.sql;
 
 import java.sql.SQLException;
 import static java.util.Objects.requireNonNull;
-import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 /**
- * A variation of the standard {@code java.util.function.Supplier} that throws
- * a {@code SQLException} if an error occurred while the supplier was getted.
- * 
- * @param <T>  supplied type
- * 
- * @author  Per Minborg
+ * A variation of the standard {@code java.util.function.Consumer} that throws a
+ * {@code SQLException} if an error occurred while the supplier was getted.
+ *
+ * @param <T> supplied type
+ *
+ * @author Per Minborg
  */
 @FunctionalInterface
-public interface SqlSupplier<T> {
+public interface SqlConsumer<T> {
 
-    T get() throws SQLException;
-    
-    static <T> SqlSupplier<T> wrap(Supplier<T> inner) { 
-        return requireNonNull(inner)::get; 
+    /**
+     * Performs this operation on the given argument.
+     *
+     * @param t the input argument to consume
+     * @throws java.sql.SQLException on error
+     */
+    void accept(T t) throws SQLException;
+
+    static <T> SqlConsumer<T> wrap(Consumer<T> inner) {
+        return requireNonNull(inner)::accept;
     }
 }

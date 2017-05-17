@@ -14,23 +14,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.speedment.runtime.core.db;
+package com.speedment.common.function.sql;
 
 import java.sql.SQLException;
 import static java.util.Objects.requireNonNull;
+import java.util.function.Supplier;
 
 /**
- * A variation of the standard {@code java.lang.Runnable} that throws
- * a {@code SQLException} if an error occurred while it ran.
+ * A variation of the standard {@code java.util.function.Supplier} that throws
+ * a {@code SQLException} if an error occurred while the supplier was getted.
+ * 
+ * @param <T>  supplied type
  * 
  * @author  Per Minborg
  */
 @FunctionalInterface
-public interface SqlRunnable {
+public interface SqlSupplier<T> {
 
-    void run() throws SQLException;
-
-    static <T> SqlRunnable wrap(Runnable inner) {
-        return requireNonNull(inner)::run;
+    T get() throws SQLException;
+    
+    static <T> SqlSupplier<T> wrap(Supplier<T> inner) { 
+        return requireNonNull(inner)::get; 
     }
 }

@@ -19,6 +19,7 @@ package com.speedment.tool.config.util;
 
 import com.speedment.runtime.config.Document;
 import com.speedment.runtime.config.exception.SpeedmentConfigException;
+
 import com.speedment.runtime.config.internal.BaseDocument;
 import com.speedment.runtime.config.trait.HasId;
 import com.speedment.runtime.config.trait.HasName;

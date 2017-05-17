@@ -16,7 +16,7 @@
  */
 package com.speedment.runtime.core.internal.util.sql;
 
-import com.speedment.runtime.core.db.SqlFunction;
+import com.speedment.common.function.sql.SqlFunction;
 
 import java.math.BigDecimal;
 import java.net.URL;

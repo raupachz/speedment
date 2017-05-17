@@ -14,9 +14,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.speedment.runtime.core.db;
+package com.speedment.common.function.sql;
 
-import com.speedment.runtime.core.exception.SpeedmentException;
 import java.sql.SQLException;
 import java.util.Objects;
 import static java.util.Objects.requireNonNull;
@@ -45,7 +44,7 @@ public interface SqlFunction<T, R> {
             try {
                 return this.apply(t);
             } catch (SQLException sqle) {
-                throw new SpeedmentException(sqle);
+                throw new SpeedmentSqlException(sqle);
             }
         };
     }

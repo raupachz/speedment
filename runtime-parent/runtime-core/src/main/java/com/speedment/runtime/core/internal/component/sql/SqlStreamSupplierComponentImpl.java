@@ -26,7 +26,7 @@ import com.speedment.runtime.core.component.ProjectComponent;
 import com.speedment.runtime.core.component.sql.SqlStreamOptimizerComponent;
 import com.speedment.runtime.core.component.sql.SqlStreamSupplierComponent;
 import com.speedment.runtime.core.component.sql.override.SqlStreamTerminatorComponent;
-import com.speedment.runtime.core.db.SqlFunction;
+import com.speedment.common.function.sql.SqlFunction;
 import com.speedment.runtime.core.stream.parallel.ParallelStrategy;
 import java.sql.ResultSet;
 import java.util.Map;

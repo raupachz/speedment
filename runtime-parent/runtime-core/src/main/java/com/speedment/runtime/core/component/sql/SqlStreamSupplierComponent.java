@@ -18,7 +18,7 @@ package com.speedment.runtime.core.component.sql;
 
 import com.speedment.runtime.config.identifier.TableIdentifier;
 import com.speedment.runtime.core.component.StreamSupplierComponent;
-import com.speedment.runtime.core.db.SqlFunction;
+import com.speedment.common.function.sql.SqlFunction;
 
 import java.sql.ResultSet;
 

@@ -19,24 +19,29 @@ package com.speedment.runtime.core.internal.component;
 import com.speedment.runtime.core.component.ManagerComponent;
 import com.speedment.runtime.core.exception.SpeedmentException;
 import com.speedment.runtime.core.manager.Manager;
+import java.sql.Connection;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Default implementation of the {@link ManagerComponent}-interface.
- * 
+ *
  * @author Emil Forslund
  */
 public final class ManagerComponentImpl implements ManagerComponent {
 
     private final Map<Class<?>, Manager<?>> managersByEntity;
+    private final Map<Class<?>, Function<Supplier<Connection>, Manager<?>>> constructorsByManager;
 
     public ManagerComponentImpl() {
         managersByEntity = new ConcurrentHashMap<>();
+        constructorsByManager = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -47,21 +52,20 @@ public final class ManagerComponentImpl implements ManagerComponent {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <E> Manager<E> managerOf(Class<E> entityClass) 
-            throws SpeedmentException {
-        
+    public <E> Manager<E> managerOf(Class<E> entityClass)
+        throws SpeedmentException {
+
         requireNonNull(entityClass);
-        
+
         @SuppressWarnings("unchecked")
-        final Manager<E> manager = (Manager<E>) 
-            managersByEntity.get(entityClass);
-        
+        final Manager<E> manager = (Manager<E>) managersByEntity.get(entityClass);
+
         if (manager == null) {
             throw new SpeedmentException(
                 "No manager exists for " + entityClass
             );
         }
-        
+
         return manager;
     }
 
@@ -69,4 +73,25 @@ public final class ManagerComponentImpl implements ManagerComponent {
     public Stream<Manager<?>> stream() {
         return managersByEntity.values().stream();
     }
+
+    @Override
+    public <M> void putConstructor(Class<M> managerClass, Function<Supplier<Connection>, M> constructor) {
+
+        @SuppressWarnings("unchecked")
+        Function<Supplier<Connection>, Manager<?>> castedConstructor
+            = (Function<Supplier<Connection>, Manager<?>>) ((Function<Supplier<Connection>, ? extends Manager>) constructor);
+
+        constructorsByManager.put(managerClass, castedConstructor);
+    }
+
+    @Override
+    public <E, M extends Manager<E>> M create(Class<M> managerClass, Supplier<Connection> connectionProvider) {
+        final Function<Supplier<Connection>, Manager<?>> constructor = constructorsByManager.get(managerClass);
+
+        @SuppressWarnings("unchecked")
+        final M result = (M) constructor.apply(connectionProvider);
+
+        return result;
+    }
+
 }

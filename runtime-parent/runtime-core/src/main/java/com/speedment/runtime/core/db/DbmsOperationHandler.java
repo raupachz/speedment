@@ -16,6 +16,7 @@
  */
 package com.speedment.runtime.core.db;
 
+import com.speedment.common.function.sql.SqlFunction;
 import com.speedment.runtime.config.Dbms;
 import com.speedment.runtime.core.internal.manager.sql.SqlInsertStatement;
 import com.speedment.runtime.core.stream.parallel.ParallelStrategy;
