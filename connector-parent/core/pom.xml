@@ -22,47 +22,44 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
-        <groupId>com.speedment</groupId>
-        <artifactId>speedment-parent</artifactId>
+        <groupId>com.speedment.connector</groupId>
+        <artifactId>connector-parent</artifactId>
         <version>3.0.13-SNAPSHOT</version>
     </parent>
     
-    <groupId>com.speedment.connector</groupId>
-    <artifactId>connector-parent</artifactId>
-    <packaging>pom</packaging> 
-    
-    <name>Speedment - Connector</name>
+    <artifactId>connector-core</artifactId>
+    <packaging>bundle</packaging>
+ 
+    <name>Speedment - Connector - Core</name>
     <description>
-        A bundle of modules that make up the Speedment Connector.
+        Core functionality for Speedment Database Connectors.
     </description>
     
-    <modules>
-        <module>core</module>
-        <module>h2</module>
-    </modules>
-    
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.speedment.common</groupId>
-                <artifactId>common-all</artifactId>
-                <version>${common.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-			
-            <dependency>
-                <groupId>com.speedment.runtime</groupId>
-                <artifactId>runtime-all</artifactId>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.speedment</groupId>
+                <artifactId>speedment-maven-plugin</artifactId>
                 <version>${speedment.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            com.speedment.connector.core
+                        </Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     
-    
-    
+    <dependencies>
+
+    </dependencies>
 </project>
