@@ -60,6 +60,9 @@
     </build>
     
     <dependencies>
-
+        <dependency>
+            <groupId>com.speedment.runtime</groupId>
+            <artifactId>runtime-config</artifactId>
+        </dependency>
     </dependencies>
 </project>
