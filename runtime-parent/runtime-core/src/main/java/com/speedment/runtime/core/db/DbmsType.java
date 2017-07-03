@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.speedment.common.mapstream.MapStream.comparing;
+import static java.util.Comparator.comparing;
 
 /**
  * The {@code DbmsType} interface defines unique properties for different Dbms
