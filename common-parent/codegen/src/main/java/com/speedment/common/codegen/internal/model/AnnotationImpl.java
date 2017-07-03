@@ -19,9 +19,7 @@ package com.speedment.common.codegen.internal.model;
 import com.speedment.common.codegen.internal.util.Copier;
 import com.speedment.common.codegen.model.*;
 import com.speedment.common.codegen.model.modifier.Modifier;
-
 import java.util.*;
-
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -75,75 +73,48 @@ public final class AnnotationImpl implements Annotation {
 		modifiers   = Copier.copy(prototype.getModifiers(), c -> c.copy(), EnumSet.noneOf(Modifier.class));
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public Annotation setName(String name) {
 		this.name = requireNonNull(name);
 		return this;
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public String getName() {
 		return name;
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public List<Field> getFields() {
 		return fields;
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public Annotation set(Javadoc doc) {
 		this.javadoc = doc;
 		return this;
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public Optional<Javadoc> getJavadoc() {
 		return Optional.ofNullable(javadoc);
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public List<Import> getImports() {
 		return imports;
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public Set<Modifier> getModifiers() {
 		return modifiers;
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public List<AnnotationUsage> getAnnotations() {
 		return annotations;
 	}
-    
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
 	public AnnotationImpl copy() {
 		return new AnnotationImpl(this);

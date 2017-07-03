@@ -18,6 +18,7 @@ package com.speedment.tool.core.internal.controller;
 
 import com.speedment.common.injector.annotation.Inject;
 import com.speedment.generator.core.component.EventComponent;
+import com.speedment.runtime.config.Table;
 import com.speedment.runtime.core.internal.util.Cast;
 import com.speedment.tool.config.ColumnProperty;
 import com.speedment.tool.config.DocumentProperty;
@@ -68,7 +69,8 @@ public final class WorkspaceController implements Initializable {
                 properties.clear();
                 
                 if (!change.getList().isEmpty()) {
-                    final TreeItem<DocumentProperty> treeItem = change.getList().get(0);
+                    final TreeItem<DocumentProperty> treeItem = 
+                        change.getList().get(0);
                     
                     if (treeItem != null) {
                         final DocumentProperty property = treeItem.getValue();
@@ -79,18 +81,22 @@ public final class WorkspaceController implements Initializable {
                         final Optional<String> extraInfo = Cast.cast(property, ColumnProperty.class)
                             .map(ColumnProperty::findDatabaseType)
                             .map(Class::getSimpleName)
-                            .map(s -> "("+s+")");
+                            .map(s -> "(" + s + ")");
                         
                         workspace.textProperty().bind(
                             Bindings.createStringBinding(() -> String.format(
                                 "Editing %s '%s' %s",
-                                withName.mainInterface().getSimpleName(),
+                                withName instanceof Table
+                                    ? ((Table) withName).isView()
+                                        ? "View" : "Table"
+                                    : withName.mainInterface().getSimpleName(),
                                 withName.getName(),
                                 extraInfo.orElse("")
                             ), withName.nameProperty())
                         );
-                       editors.getUiVisibleProperties( treeItem.getValue() )
-                            .forEach(properties::add);
+                        
+                        editors.getUiVisibleProperties(treeItem.getValue())
+                            .forEachOrdered(properties::add);
                     }
                 }
                 

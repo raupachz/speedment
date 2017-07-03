@@ -20,6 +20,7 @@ import com.speedment.common.injector.annotation.Inject;
 import com.speedment.common.logger.Logger;
 import com.speedment.common.logger.LoggerManager;
 import com.speedment.runtime.config.Dbms;
+import com.speedment.runtime.core.ApplicationBuilder.LogType;
 import com.speedment.runtime.core.component.DbmsHandlerComponent;
 import com.speedment.runtime.core.component.connectionpool.ConnectionPoolComponent;
 import com.speedment.runtime.core.db.AsynchronousQueryResult;
@@ -41,7 +42,6 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.speedment.common.invariant.NullUtil.requireNonNulls;
-import com.speedment.runtime.core.ApplicationBuilder.LogType;
 import static com.speedment.runtime.core.util.DatabaseUtil.dbmsTypeOf;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
@@ -54,28 +54,27 @@ import static java.util.Objects.requireNonNull;
 public abstract class AbstractDbmsOperationHandler implements DbmsOperationHandler {
 
     private static final Logger LOGGER = LoggerManager.getLogger(AbstractDbmsOperationHandler.class);
-//    public static final String LOGGER_INSERT_NAME = "#INSERT";
-//    public static final String LOGGER_UPDATE_NAME = "#UPDATE";
-//    public static final String LOGGER_DELETE_NAME = "#DELETE";
     protected static final Logger LOGGER_PERSIST = LoggerManager.getLogger(LogType.PERSIST.getLoggerName());
     protected static final Logger LOGGER_UPDATE = LoggerManager.getLogger(LogType.UPDATE.getLoggerName());
     protected static final Logger LOGGER_REMOVE = LoggerManager.getLogger(LogType.REMOVE.getLoggerName());
 
     public static final boolean SHOW_METADATA = false; // Warning: Enabling SHOW_METADATA will make some dbmses fail on metadata (notably Oracle) because all the columns must be read in order...
 
-    private @Inject ConnectionPoolComponent connectionPoolComponent;
-    private @Inject DbmsHandlerComponent dbmsHandlerComponent;
+    @Inject
+    private ConnectionPoolComponent connectionPoolComponent;
+    @Inject
+    private DbmsHandlerComponent dbmsHandlerComponent;
 
-    protected AbstractDbmsOperationHandler() {}
+    protected AbstractDbmsOperationHandler() {
+    }
 
     @Override
     public <T> Stream<T> executeQuery(Dbms dbms, String sql, List<?> values, SqlFunction<ResultSet, T> rsMapper) {
         requireNonNulls(sql, values, rsMapper);
 
         try (
-                final Connection connection = connectionPoolComponent.getConnection(dbms);
-                final PreparedStatement ps = connection.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY)
-        ) {
+            final Connection connection = connectionPoolComponent.getConnection(dbms);
+            final PreparedStatement ps = connection.prepareStatement(sql, java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY)) {
             configureSelect(ps);
             connection.setAutoCommit(false);
             try {
@@ -104,11 +103,11 @@ public abstract class AbstractDbmsOperationHandler implements DbmsOperationHandl
 
     @Override
     public <T> AsynchronousQueryResult<T> executeQueryAsync(
-            Dbms dbms, 
-            String sql, 
-            List<?> values, 
-            SqlFunction<ResultSet, T> rsMapper,
-            ParallelStrategy parallelStrategy) {
+        Dbms dbms,
+        String sql,
+        List<?> values,
+        SqlFunction<ResultSet, T> rsMapper,
+        ParallelStrategy parallelStrategy) {
 
         return new AsynchronousQueryResultImpl<>(
             Objects.requireNonNull(sql),
@@ -234,10 +233,15 @@ public abstract class AbstractDbmsOperationHandler implements DbmsOperationHandl
             }
             ps.executeUpdate();
 
-            try (final ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                while (generatedKeys.next()) {
-                    sqlStatement.addGeneratedKey(generatedKeys.getLong(1));
-                }
+            handleGeneratedKeys(ps, sqlStatement);
+        }
+    }
+
+    @Override
+    public <ENTITY> void handleGeneratedKeys(PreparedStatement ps, SqlInsertStatement<ENTITY> sqlStatement) throws SQLException {
+        try (final ResultSet generatedKeys = ps.getGeneratedKeys()) {
+            while (generatedKeys.next()) {
+                sqlStatement.addGeneratedKey(generatedKeys.getLong(1));
             }
         }
     }
@@ -264,7 +268,7 @@ public abstract class AbstractDbmsOperationHandler implements DbmsOperationHandl
         sqlStatementList.stream()
             .filter(SqlInsertStatement.class::isInstance)
             .map(SqlInsertStatement.class::cast)
-            .forEach(SqlInsertStatement<?>::acceptGeneratedKeys);
+            .forEach(SqlInsertStatement::acceptGeneratedKeys);
     }
 
     @FunctionalInterface

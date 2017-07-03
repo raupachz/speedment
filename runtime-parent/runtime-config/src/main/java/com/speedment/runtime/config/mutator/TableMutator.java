@@ -16,14 +16,18 @@
  */
 package com.speedment.runtime.config.mutator;
 
-
-import com.speedment.runtime.config.*;
+import com.speedment.runtime.config.Column;
+import com.speedment.runtime.config.ForeignKey;
+import com.speedment.runtime.config.Index;
+import com.speedment.runtime.config.PrimaryKeyColumn;
+import com.speedment.runtime.config.Table;
 import com.speedment.runtime.config.internal.ColumnImpl;
 import com.speedment.runtime.config.internal.ForeignKeyImpl;
 import com.speedment.runtime.config.internal.IndexImpl;
 import com.speedment.runtime.config.internal.PrimaryKeyColumnImpl;
 import com.speedment.runtime.config.mutator.trait.HasAliasMutator;
 import com.speedment.runtime.config.mutator.trait.HasEnabledMutator;
+import com.speedment.runtime.config.mutator.trait.HasIdMutator;
 import com.speedment.runtime.config.mutator.trait.HasNameMutator;
 
 import static com.speedment.runtime.config.Table.*;
@@ -34,14 +38,18 @@ import static com.speedment.runtime.config.util.DocumentUtil.newDocument;
  * @author       Per Minborg
  * @param <DOC>  document type
  */
-
 public class TableMutator<DOC extends Table> extends DocumentMutatorImpl<DOC> implements 
         HasEnabledMutator<DOC>, 
+        HasIdMutator<DOC>,    
         HasNameMutator<DOC>, 
         HasAliasMutator<DOC> {
 
     public TableMutator(DOC table) {
         super(table);
+    }
+
+    public void setView(boolean isView) {
+        put(IS_VIEW, isView);
     }
 
     public Column addNewColumn() {

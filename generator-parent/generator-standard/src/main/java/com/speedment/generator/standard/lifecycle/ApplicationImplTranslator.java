@@ -44,18 +44,18 @@ public final class ApplicationImplTranslator extends AbstractJavaClassTranslator
     @Override
     protected Class makeCodeGenModel(File file) {
         return newBuilder(file, getClassOrInterfaceName())
-            .forEveryProject((clazz, project) -> {
-                clazz.public_().final_()
-                    .setSupertype(generatedImplType())
-                    .add(applicationType());
-            }).build();
+            .forEveryProject((clazz, project)
+                -> clazz.public_().final_()
+                .setSupertype(generatedImplType())
+                .add(applicationType())
+            ).build();
     }
 
     @Override
     protected String getJavadocRepresentText() {
         return "The default {@link " + Speedment.class.getName() + 
             "} implementation class for the {@link " + Project.class.getName() + 
-            "} named " + getSupport().projectOrThrow().getName() + ".";
+            "} named " + getSupport().projectOrThrow().getId() + ".";
     }
     
     private Type applicationType() {

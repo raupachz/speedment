@@ -39,8 +39,10 @@ import com.speedment.runtime.config.Table;
 import com.speedment.runtime.config.trait.HasEnabled;
 import static com.speedment.runtime.config.util.DocumentDbUtil.traverseOver;
 import com.speedment.runtime.core.component.InfoComponent;
+import com.speedment.runtime.core.component.ProjectComponent;
 import com.speedment.runtime.core.exception.SpeedmentException;
 import com.speedment.runtime.core.internal.util.Statistics;
+import static com.speedment.runtime.core.internal.util.Statistics.Event.GENERATE;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
@@ -57,29 +59,34 @@ import java.util.stream.Stream;
 /**
  *
  * @author Emil Forslund
- * @since  3.0.2
+ * @since 3.0.2
  */
 public final class TranslatorManagerHelper {
-    
-    private final static Logger LOGGER = 
-        LoggerManager.getLogger(DefaultTranslatorManager.class);
-    
-    private final static String HASH_PREFIX = ".";
-    private final static String HASH_SUFFIX = ".md5";
-    private final static boolean PRINT_CODE = false;
+
+    private static final Logger LOGGER
+        = LoggerManager.getLogger(TranslatorManagerHelper.class);
+
+    private static final String HASH_PREFIX = ".";
+    private static final String HASH_SUFFIX = ".md5";
 
     private final AtomicInteger fileCounter = new AtomicInteger(0);
-
-    private @Inject InfoComponent info;
-    private @Inject PathComponent paths;
-    private @Inject EventComponent events;
-    private @Inject CodeGenerationComponent codeGenerationComponent;
     
+    @Inject
+    private InfoComponent info;
+    @Inject
+    private PathComponent paths;
+    @Inject
+    private EventComponent events;
+    @Inject
+    private ProjectComponent projects;
+    @Inject
+    private CodeGenerationComponent codeGenerationComponent;
+
     public void accept(TranslatorManager delegator, Project project) {
         requireNonNull(project);
-        Statistics.onGenerate(info);
+        Statistics.report(info, projects, GENERATE);
 
-        final List<Translator<?, ?>> writeOnceTranslators   = new ArrayList<>();
+        final List<Translator<?, ?>> writeOnceTranslators = new ArrayList<>();
         final List<Translator<?, ?>> writeAlwaysTranslators = new ArrayList<>();
         final Generator gen = new JavaGenerator();
 
@@ -99,15 +106,15 @@ public final class TranslatorManagerHelper {
 
         traverseOver(project, Table.class)
             .filter(HasEnabled::test)
-            .forEach(table -> {
-                codeGenerationComponent.translators(table).forEachOrdered(t -> {
-                    if (t.isInGeneratedPackage()) {
-                        writeAlwaysTranslators.add(t);
-                    } else {
-                        writeOnceTranslators.add(t);
-                    }
-                });
-            });
+            .forEach(table
+                -> codeGenerationComponent.translators(table).forEachOrdered(t -> {
+                if (t.isInGeneratedPackage()) {
+                    writeAlwaysTranslators.add(t);
+                } else {
+                    writeOnceTranslators.add(t);
+                }
+            })
+            );
 
         // Erase any previous unmodified files.
         delegator.clearExistingFiles(project);
@@ -123,10 +130,12 @@ public final class TranslatorManagerHelper {
             .collect(Collectors.toList())
         ).forEach(meta -> delegator.writeToFile(project, meta, true));
 
+        LOGGER.info("Wrote %d files in %s", getFilesCreated(), paths.packageLocation());
+
         events.notify(new AfterGenerate(project, gen, delegator));
     }
 
-    public void clearExistingFiles(TranslatorManager delegator, Project project) {
+    public void clearExistingFiles(Project project) {
         final Path dir = paths.packageLocation();
 
         try {
@@ -154,12 +163,12 @@ public final class TranslatorManagerHelper {
                             && filename.endsWith(HASH_SUFFIX)) {
                             final Path original
                                 = entry
-                                .getParent() // The hidden folder
-                                .getParent() // The parent folder
-                                .resolve(filename.substring( // Lookup original .java file
-                                    HASH_PREFIX.length(),
-                                    filename.length() - HASH_SUFFIX.length()
-                                ));
+                                    .getParent() // The hidden folder
+                                    .getParent() // The parent folder
+                                    .resolve(filename.substring( // Lookup original .java file
+                                        HASH_PREFIX.length(),
+                                        filename.length() - HASH_SUFFIX.length()
+                                    ));
 
                             if (original.toFile().exists()
                                 && HashUtil.compare(original, entry)) {
@@ -174,7 +183,7 @@ public final class TranslatorManagerHelper {
     }
 
     private static void delete(Path path) throws IOException {
-        LOGGER.info("Deleting '" + path.toString() + "'.");
+        LOGGER.debug("Deleting '" + path.toString() + "'.");
         Files.delete(path);
     }
 
@@ -212,11 +221,10 @@ public final class TranslatorManagerHelper {
             LOGGER.error(ex, "Failed to write file " + codePath);
         }
 
-        if (PRINT_CODE) {
-            LOGGER.info("*** BEGIN File:" + codePath);
-            Stream.of(content.split(Formatting.nl())).forEachOrdered(LOGGER::info);
-            LOGGER.info("*** END   File:" + codePath);
-        }
+        LOGGER.trace("*** BEGIN File:" + codePath);
+        Stream.of(content.split(Formatting.nl())).forEachOrdered(LOGGER::trace);
+        LOGGER.trace("*** END   File:" + codePath);
+
     }
 
     public int getFilesCreated() {
@@ -224,7 +232,7 @@ public final class TranslatorManagerHelper {
     }
 
     private static void write(Path path, String content, boolean hidden) throws IOException {
-        LOGGER.info("Creating '" + path.toString() + "'.");
+        LOGGER.debug("Creating '" + path.toString() + "'.");
 
         final Path parent = path.getParent();
         try {

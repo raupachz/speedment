@@ -24,7 +24,8 @@ import com.speedment.common.codegen.model.Method;
  * 
  * @author Emil Forslund
  */
-public final class InterfaceImpl extends ClassOrInterfaceImpl<Interface> implements Interface {
+public final class InterfaceImpl extends ClassOrInterfaceImpl<Interface> 
+implements Interface {
     
     /**
      * Initializes this interface using a name.
@@ -47,9 +48,6 @@ public final class InterfaceImpl extends ClassOrInterfaceImpl<Interface> impleme
 		super (prototype);
     }
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public InterfaceImpl copy() {
 		return new InterfaceImpl(this);

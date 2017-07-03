@@ -1,13 +1,13 @@
 /**
- *
+ * 
  * Copyright (c) 2006-2017, Speedment, Inc. All Rights Reserved.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not
  * use this file except in compliance with the License. You may obtain a copy of
- * the License at:
- *
+ * the License at: 
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,13 +16,13 @@
  */
 package com.speedment.runtime.field.internal.predicate.bytes;
 
+import com.speedment.common.annotation.GeneratedCode;
 import com.speedment.common.tuple.Tuple2;
 import com.speedment.runtime.field.internal.predicate.AbstractFieldPredicate;
 import com.speedment.runtime.field.internal.predicate.BetweenPredicate;
 import com.speedment.runtime.field.predicate.Inclusion;
 import com.speedment.runtime.field.predicate.PredicateType;
 import com.speedment.runtime.field.trait.HasByteValue;
-import javax.annotation.Generated;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -34,14 +34,21 @@ import static java.util.Objects.requireNonNull;
  * @author Emil Forslund
  * @since  3.0.0
  */
-@Generated(value = "Speedment")
-public final class ByteBetweenPredicate<ENTITY, D> extends AbstractFieldPredicate<ENTITY, Byte, HasByteValue<ENTITY, D>> implements BetweenPredicate, Tuple2<Byte, Byte> {
+@GeneratedCode(value = "Speedment")
+public final class ByteBetweenPredicate<ENTITY, D> 
+extends AbstractFieldPredicate<ENTITY, HasByteValue<ENTITY, D>> 
+implements BetweenPredicate,
+          Tuple2<Byte, Byte> {
     
     private final byte start;
     private final byte end;
     private final Inclusion inclusion;
     
-    public ByteBetweenPredicate(HasByteValue<ENTITY, D> field, byte start, byte end, Inclusion inclusion) {
+    public ByteBetweenPredicate(
+            HasByteValue<ENTITY, D> field,
+            byte start,
+            byte end,
+            Inclusion inclusion) {
         super(PredicateType.BETWEEN, field, entity -> {
             final byte fieldValue = field.getAsByte(entity);
             
@@ -80,5 +87,10 @@ public final class ByteBetweenPredicate<ENTITY, D> extends AbstractFieldPredicat
     @Override
     public Inclusion getInclusion() {
         return inclusion;
+    }
+    
+    @Override
+    public ByteNotBetweenPredicate<ENTITY, D> negate() {
+        return new ByteNotBetweenPredicate<>(getField(), start, end, inclusion);
     }
 }

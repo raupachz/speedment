@@ -1,13 +1,13 @@
 /**
- *
+ * 
  * Copyright (c) 2006-2017, Speedment, Inc. All Rights Reserved.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not
  * use this file except in compliance with the License. You may obtain a copy of
- * the License at:
- *
+ * the License at: 
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,13 +16,13 @@
  */
 package com.speedment.runtime.field;
 
+import com.speedment.common.annotation.GeneratedCode;
 import com.speedment.runtime.config.identifier.ColumnIdentifier;
 import com.speedment.runtime.field.internal.DoubleForeignKeyFieldImpl;
 import com.speedment.runtime.field.method.DoubleGetter;
 import com.speedment.runtime.field.method.DoubleSetter;
 import com.speedment.runtime.field.trait.HasFinder;
 import com.speedment.runtime.typemapper.TypeMapper;
-import javax.annotation.Generated;
 
 /**
  * A field that represents a primitive {@code double} value that references
@@ -38,7 +38,7 @@ import javax.annotation.Generated;
  * @see ReferenceField
  * @see ComparableForeignKeyField
  */
-@Generated(value = "Speedment")
+@GeneratedCode(value = "Speedment")
 public interface DoubleForeignKeyField<ENTITY, D, FK_ENTITY> extends DoubleField<ENTITY, D>, HasFinder<ENTITY, FK_ENTITY> {
     
     /**
@@ -56,7 +56,13 @@ public interface DoubleForeignKeyField<ENTITY, D, FK_ENTITY> extends DoubleField
      * @param unique      if represented column only contains unique values
      * @return            the created field
      */
-    static <ENTITY, D, FK_ENTITY> DoubleForeignKeyField<ENTITY, D, FK_ENTITY> create(ColumnIdentifier<ENTITY> identifier, DoubleGetter<ENTITY> getter, DoubleSetter<ENTITY> setter, DoubleField<FK_ENTITY, D> referenced, TypeMapper<D, Double> typeMapper, boolean unique) {
+    static <ENTITY, D, FK_ENTITY> DoubleForeignKeyField<ENTITY, D, FK_ENTITY> create(
+    ColumnIdentifier<ENTITY> identifier,
+            DoubleGetter<ENTITY> getter,
+            DoubleSetter<ENTITY> setter,
+            DoubleField<FK_ENTITY, D> referenced,
+            TypeMapper<D, Double> typeMapper,
+            boolean unique) {
         return new DoubleForeignKeyFieldImpl<>(
             identifier, getter, setter, referenced, typeMapper, unique
         );

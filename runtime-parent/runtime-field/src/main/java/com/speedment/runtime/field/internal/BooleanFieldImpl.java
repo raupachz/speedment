@@ -1,13 +1,13 @@
 /**
- *
+ * 
  * Copyright (c) 2006-2017, Speedment, Inc. All Rights Reserved.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not
  * use this file except in compliance with the License. You may obtain a copy of
- * the License at:
- *
+ * the License at: 
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,6 +16,7 @@
  */
 package com.speedment.runtime.field.internal;
 
+import com.speedment.common.annotation.GeneratedCode;
 import com.speedment.runtime.config.identifier.ColumnIdentifier;
 import com.speedment.runtime.field.BooleanField;
 import com.speedment.runtime.field.internal.method.GetBooleanImpl;
@@ -23,7 +24,6 @@ import com.speedment.runtime.field.method.BooleanGetter;
 import com.speedment.runtime.field.method.BooleanSetter;
 import com.speedment.runtime.field.method.GetBoolean;
 import com.speedment.runtime.typemapper.TypeMapper;
-import javax.annotation.Generated;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -33,7 +33,7 @@ import static java.util.Objects.requireNonNull;
  * @author Emil Forslund
  * @since  3.0.0
  */
-@Generated(value = "Speedment")
+@GeneratedCode(value = "Speedment")
 public final class BooleanFieldImpl<ENTITY, D> implements BooleanField<ENTITY, D> {
     
     private final ColumnIdentifier<ENTITY> identifier;
@@ -42,7 +42,12 @@ public final class BooleanFieldImpl<ENTITY, D> implements BooleanField<ENTITY, D
     private final TypeMapper<D, Boolean> typeMapper;
     private final boolean unique;
     
-    public BooleanFieldImpl(ColumnIdentifier<ENTITY> identifier, BooleanGetter<ENTITY> getter, BooleanSetter<ENTITY> setter, TypeMapper<D, Boolean> typeMapper, boolean unique) {
+    public BooleanFieldImpl(
+            ColumnIdentifier<ENTITY> identifier,
+            BooleanGetter<ENTITY> getter,
+            BooleanSetter<ENTITY> setter,
+            TypeMapper<D, Boolean> typeMapper,
+            boolean unique) {
         this.identifier = requireNonNull(identifier);
         this.getter     = new GetBooleanImpl<>(this, getter);
         this.setter     = requireNonNull(setter);

@@ -17,13 +17,15 @@
 package com.speedment.common.codegen.internal.java.view;
 
 import com.speedment.common.codegen.Generator;
-import static com.speedment.common.codegen.internal.util.CollectorUtil.joinIfNotEmpty;
-import static com.speedment.common.codegen.internal.util.NullUtil.requireNonNulls;
 import com.speedment.common.codegen.model.Enum;
 import com.speedment.common.codegen.util.Formatting;
+
+import java.util.List;
+
+import static com.speedment.common.codegen.internal.util.CollectorUtil.joinIfNotEmpty;
+import static com.speedment.common.codegen.internal.util.NullUtil.requireNonNulls;
 import static com.speedment.common.codegen.util.Formatting.dnl;
 import static com.speedment.common.codegen.util.Formatting.nl;
-import java.util.List;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -33,34 +35,22 @@ import static java.util.stream.Collectors.toList;
  * @author Emil Forslund
  */
 public final class EnumView extends ClassOrInterfaceView<Enum> {
-	
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
 	protected String renderDeclarationType() {
 		return ENUM_STRING;
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public String extendsOrImplementsInterfaces() {
 		return IMPLEMENTS_STRING;
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	protected String renderSupertype(Generator gen, Enum model) {
 		return "";
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	protected String onBeforeFields(Generator gen, Enum model) {
         requireNonNulls(gen, model);
@@ -73,7 +63,8 @@ public final class EnumView extends ClassOrInterfaceView<Enum> {
 		return constants.stream().collect(
 				joinIfNotEmpty(
 					(!model.getConstants().isEmpty()
-					&& !model.getConstants().get(0).getValues().isEmpty())
+					&& (!model.getConstants().get(0).getValues().isEmpty()
+					||  !model.getConstants().get(0).getAnnotations().isEmpty()))
                         ? "," + nl() : ", ", 
 					"", 
 					";"
@@ -81,9 +72,6 @@ public final class EnumView extends ClassOrInterfaceView<Enum> {
 			);
 	}
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected String renderConstructors(Generator gen, Enum model) {
         requireNonNulls(gen, model);

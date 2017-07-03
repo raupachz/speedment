@@ -30,7 +30,7 @@ import static java.util.stream.Collectors.toList;
  *
  * @author  Emil Forslund
  * @author  Simon Jonasson
- * @since   1.0.0
+ * @since   3.0.0
  */
 public final class EnumGeneratorUtil {
 
@@ -63,12 +63,12 @@ public final class EnumGeneratorUtil {
     public static List<String> enumConstantsOf(Column column) {
         return Stream.of(column.getEnumConstants()
             .orElseThrow(() -> new RuntimeException(
-                "Column '" + column.getName() + 
-                "' in table '" + column.getParentOrThrow().getName() + 
+                "Column '" + column.getId() + 
+                "' in table '" + column.getParentOrThrow().getId() + 
                 "' was marked as an enum but no enum constants was specified."
             ))
             .split(",")
-        ).collect(toList());
+        ).sorted().collect(toList());
     }
     
     public static Stream<Class<?>> classesIn(Class<?> entityClass) {

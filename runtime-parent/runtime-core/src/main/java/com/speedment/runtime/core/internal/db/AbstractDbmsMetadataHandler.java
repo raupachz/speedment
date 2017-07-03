@@ -16,16 +16,15 @@
  */
 package com.speedment.runtime.core.internal.db;
 
-import static com.speedment.common.injector.State.INITIALIZED;
 import com.speedment.common.injector.annotation.ExecuteBefore;
 import com.speedment.common.injector.annotation.Inject;
-import static com.speedment.common.invariant.NullUtil.requireNonNulls;
 import com.speedment.common.logger.Logger;
 import com.speedment.common.logger.LoggerManager;
 import com.speedment.runtime.config.*;
 import com.speedment.runtime.config.internal.ProjectImpl;
 import com.speedment.runtime.config.mutator.ForeignKeyColumnMutator;
 import com.speedment.runtime.config.parameter.OrderType;
+import com.speedment.runtime.config.trait.HasId;
 import com.speedment.runtime.config.trait.HasMainInterface;
 import com.speedment.runtime.config.trait.HasName;
 import com.speedment.runtime.config.trait.HasParent;
@@ -37,22 +36,26 @@ import com.speedment.runtime.core.db.*;
 import com.speedment.runtime.core.db.metadata.ColumnMetaData;
 import com.speedment.runtime.core.db.metadata.TypeInfoMetaData;
 import com.speedment.runtime.core.exception.SpeedmentException;
-import static com.speedment.runtime.core.internal.db.AbstractDbmsOperationHandler.SHOW_METADATA;
-import static com.speedment.runtime.core.internal.util.CaseInsensitiveMaps.newCaseInsensitiveMap;
-import static com.speedment.runtime.core.util.DatabaseUtil.dbmsTypeOf;
 import com.speedment.runtime.core.util.ProgressMeasure;
 import com.speedment.runtime.typemapper.TypeMapper;
+
 import java.sql.*;
 import java.util.*;
-import static java.util.Objects.nonNull;
-import static java.util.Objects.requireNonNull;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import static com.speedment.common.injector.State.INITIALIZED;
+import static com.speedment.common.invariant.NullUtil.requireNonNulls;
+import static com.speedment.runtime.core.internal.db.AbstractDbmsOperationHandler.SHOW_METADATA;
+import static com.speedment.runtime.core.internal.util.CaseInsensitiveMaps.newCaseInsensitiveMap;
+import static com.speedment.runtime.core.util.DatabaseUtil.dbmsTypeOf;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import java.util.stream.Stream;
 
 /**
  *
@@ -97,7 +100,7 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
 
         // Locate the dbms in the copy.
         final Dbms dbmsCopy = projectCopy.dbmses()
-            .filter(d -> d.getName().equals(dbms.getName()))
+            .filter(d -> d.getId().equals(dbms.getId()))
             .findAny().orElseThrow(() -> new SpeedmentException(
                 "Could not find Dbms document in copy."
             ));
@@ -181,7 +184,8 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
                         boolean schemaWasUsed = false;
                         if (!naming.getSchemaExcludeSet().contains(name)) {
                             if (filterCriteria.test(name)) {
-                                final Schema schema = dbms.mutator().addNewSchema();
+                                final Schema schema = dbms.mutator().addNewSchema();                                
+                                schema.mutator().setId(name);
                                 schema.mutator().setName(name);
                                 schemaWasUsed = true;
                             }
@@ -210,6 +214,7 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
                         if (filterCriteria.test(schemaName)) {
                             if (!naming.getSchemaExcludeSet().contains(schemaName)) {
                                 final Schema schema = dbms.mutator().addNewSchema();
+                                schema.mutator().setId(schemaName);
                                 schema.mutator().setName(schemaName);
                                 schemaWasUsed = true;
                             }
@@ -284,7 +289,10 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
         progressListener.setCurrentAction(action);
 
         try (final Connection connection = getConnection(dbms)) {
-            try (final ResultSet rsTable = connection.getMetaData().getTables(jdbcCatalogLookupName(schema), jdbcSchemaLookupName(schema), null, new String[]{"TABLE"})) {
+            try (final ResultSet rsTable = connection.getMetaData().getTables(
+                    jdbcCatalogLookupName(schema),
+                    jdbcSchemaLookupName(schema),
+                    null, new String[] {"TABLE", "VIEW"})) {
 
                 if (SHOW_METADATA) {
                     final ResultSetMetaData rsmd = rsTable.getMetaData();
@@ -303,9 +311,12 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
                         }
                     }
                     
-                    final Table table = schema.mutator().addNewTable();
+                    final Table table      = schema.mutator().addNewTable();
                     final String tableName = rsTable.getString("TABLE_NAME");
+                    final String tableType = rsTable.getString("TABLE_TYPE");
+                    table.mutator().setId(tableName);
                     table.mutator().setName(tableName);
+                    table.mutator().setView("VIEW".equals(tableType));
                 }
             }
         } catch (final SQLException sqle) {
@@ -354,7 +365,8 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
             final ColumnMetaData md = ColumnMetaData.of(rs);
 
             final String columnName = md.getColumnName();
-
+            
+            column.mutator().setId(columnName);
             column.mutator().setName(columnName);
             column.mutator().setOrdinalPosition(md.getOrdinalPosition());
 
@@ -385,11 +397,17 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
                 // Fall-back to DEFAULT_MAPPING
                 selectedJdbcClass = DEFAULT_MAPPING;
                 LOGGER.warn(
-                    "Unable to determine mapping for table " + table.getName() + 
-                    ", column " + column.getName() + 
-                    ". Fall-back to JDBC-type " + 
-                    selectedJdbcClass.getSimpleName()
-                );
+                    String.format("Unable to determine mapping for table %s, column %s. "
+                        + "Type name %s, data type %d, decimal digits %d."
+                        + "Fallback to JDBC-type %s",
+                        table.getId(),
+                        column.getId(),
+                        md.getTypeName(),
+                        md.getDataType(),
+                        md.getDecimalDigits(),
+                        selectedJdbcClass.getSimpleName()
+                    )
+                );                    
             }
 
             column.mutator().setDatabaseType(selectedJdbcClass);
@@ -434,14 +452,16 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
             );
 
         final AbstractDbmsOperationHandler.TableChildMutator<PrimaryKeyColumn, ResultSet> mutator = (primaryKeyColumn, rs) -> {
-            primaryKeyColumn.mutator().setName(rs.getString("COLUMN_NAME"));
+            final String columnName = rs.getString("COLUMN_NAME");
+            primaryKeyColumn.mutator().setId(columnName);
+            primaryKeyColumn.mutator().setName(columnName);
             primaryKeyColumn.mutator().setOrdinalPosition(rs.getInt("KEY_SEQ"));
         };
 
         tableChilds(table.mutator()::addNewPrimaryKeyColumn, supplier, mutator, progressListener);
         
         if (table.primaryKeyColumns().noneMatch(pk -> true)) {
-            LOGGER.warn("Table '" + table.getName() + "' does not have any primary key.");
+            LOGGER.warn("Table '" + table.getId() + "' does not have any primary key.");
         }
     }
 
@@ -462,11 +482,14 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
             final String indexName = rs.getString("INDEX_NAME");
             final boolean unique = !rs.getBoolean("NON_UNIQUE");
 
+            index.mutator().setId(indexName);
             index.mutator().setName(indexName);
             index.mutator().setUnique(unique);
 
             final IndexColumn indexColumn = index.mutator().addNewIndexColumn();
-            indexColumn.mutator().setName(rs.getString("COLUMN_NAME"));
+            final String columnName = rs.getString("COLUMN_NAME");
+            indexColumn.mutator().setId(columnName);
+            indexColumn.mutator().setName(columnName);
             indexColumn.mutator().setOrdinalPosition(rs.getInt("ORDINAL_POSITION"));
             final String ascOrDesc = rs.getString("ASC_OR_DESC");
 
@@ -502,18 +525,21 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
         final AbstractDbmsOperationHandler.TableChildMutator<ForeignKey, ResultSet> mutator = (foreignKey, rs) -> {
 
             final String foreignKeyName = rs.getString("FK_NAME");
+            foreignKey.mutator().setId(foreignKeyName);
             foreignKey.mutator().setName(foreignKeyName);
 
             final ForeignKeyColumn foreignKeyColumn = foreignKey.mutator().addNewForeignKeyColumn();
             final ForeignKeyColumnMutator<?> fkcMutator = foreignKeyColumn.mutator();
-            fkcMutator.setName(rs.getString("FKCOLUMN_NAME"));
+            final String fkColumnName = rs.getString("FKCOLUMN_NAME");
+            fkcMutator.setId(fkColumnName);
+            fkcMutator.setName(fkColumnName);
             fkcMutator.setOrdinalPosition(rs.getInt("KEY_SEQ"));
             fkcMutator.setForeignTableName(rs.getString("PKTABLE_NAME"));
             fkcMutator.setForeignColumnName(rs.getString("PKCOLUMN_NAME"));
 
             // FKs always point to the same DBMS but can
             // be changed to another one using the config 
-            fkcMutator.setForeignDatabaseName(schema.getParentOrThrow().getName());
+            fkcMutator.setForeignDatabaseName(schema.getParentOrThrow().getId());
 
             // Use schema name first but if not present, use catalog name
             fkcMutator.setForeignSchemaName(
@@ -612,7 +638,7 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
      * connection.getMetaData().getXxxx(catalogLookupName, ...) methods
      */
     protected String jdbcCatalogLookupName(Schema schema) {
-        return schema.getName();
+        return schema.getId();
     }
 
     /**
@@ -624,7 +650,7 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
      * connection.getMetaData().getColumns() method
      */
     protected String metaDataTableNameForColumns(Table table) {
-        return table.getName();
+        return table.getId();
     }
 
     /**
@@ -636,7 +662,7 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
      * connection.getMetaData().getIndexes() method
      */
     protected String metaDataTableNameForIndexes(Table table) {
-        return table.getName();
+        return table.getId();
     }
 
     /**
@@ -648,7 +674,7 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
      * connection.getMetaData().getPrimaryKeys() method
      */
     protected String metaDataTableNameForPrimaryKeys(Table table) {
-        return table.getName();
+        return table.getId();
     }
 
     /**
@@ -660,7 +686,7 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
      * connection.getMetaData().getImportedKeys() method
      */
     protected String metaDataTableNameForForeignKeys(Table table) {
-        return table.getName();
+        return table.getId();
     }
     
     /**
@@ -671,7 +697,7 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
      * @return       the table name to use
      */
     protected String metaDataTableNameForShowColumns(Table table) {
-        return table.getName();
+        return table.getId();
     }
     
     protected Map<String, Class<?>> readTypeMapFromDB(Dbms dbms) throws SQLException {
@@ -730,12 +756,12 @@ public abstract class AbstractDbmsMetadataHandler implements DbmsMetadataHandler
         return result;
     }
 
-    private <P extends HasName, D extends Document & HasName & HasMainInterface & HasParent<P>> String actionName(D doc) {
+    private <P extends HasId & HasName, D extends Document & HasId & HasName & HasMainInterface & HasParent<P>> String actionName(D doc) {
         return doc.mainInterface().getSimpleName() +
             " " +
-            doc.getName() +
+            doc.getId() +
             " in " +
-            doc.getParentOrThrow().getName();
+            doc.getParentOrThrow().getId();
     }
     
     /**

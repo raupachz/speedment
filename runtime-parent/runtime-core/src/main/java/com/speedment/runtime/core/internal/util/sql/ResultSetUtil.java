@@ -19,6 +19,7 @@ package com.speedment.runtime.core.internal.util.sql;
 import com.speedment.runtime.core.db.SqlFunction;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URL;
 import java.sql.*;
 import java.util.UUID;
@@ -173,6 +174,16 @@ public final class ResultSetUtil {
 
     public static BigDecimal getBigDecimal(final ResultSet resultSet, final int ordinalPosition) throws SQLException {
         return getNullableFrom(resultSet, rs -> rs.getBigDecimal(ordinalPosition));
+    }
+    
+    public static BigInteger getBigInteger(final ResultSet resultSet, final int ordinalPosition) throws SQLException {
+        return getNullableFrom(resultSet, rs -> {
+            final BigDecimal bd = rs.getBigDecimal(ordinalPosition);
+            if (bd == null) {
+                return null;
+            }
+            return bd.toBigInteger();
+        });
     }
 
     public static Blob getBlob(final ResultSet resultSet, final int ordinalPosition) throws SQLException {

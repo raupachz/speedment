@@ -1,13 +1,13 @@
 /**
- *
+ * 
  * Copyright (c) 2006-2017, Speedment, Inc. All Rights Reserved.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not
  * use this file except in compliance with the License. You may obtain a copy of
- * the License at:
- *
+ * the License at: 
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,7 +16,7 @@
  */
 package com.speedment.runtime.field;
 
-import javax.annotation.Generated;
+import com.speedment.common.annotation.GeneratedCode;
 
 /**
  * JUnit tests for the primitive {@code char} field class.
@@ -26,8 +26,5 @@ import javax.annotation.Generated;
  * 
  * @see CharField
  */
-@Generated(value = "Speedment")
-public final class CharFieldTest {
-    
-    
-}
+@GeneratedCode(value = "Speedment")
+public final class CharFieldTest {}

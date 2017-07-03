@@ -1,13 +1,13 @@
 /**
- *
+ * 
  * Copyright (c) 2006-2017, Speedment, Inc. All Rights Reserved.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not
  * use this file except in compliance with the License. You may obtain a copy of
- * the License at:
- *
+ * the License at: 
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,6 +16,7 @@
  */
 package com.speedment.runtime.field.internal;
 
+import com.speedment.common.annotation.GeneratedCode;
 import com.speedment.runtime.config.identifier.ColumnIdentifier;
 import com.speedment.runtime.field.ShortField;
 import com.speedment.runtime.field.internal.comparator.ShortFieldComparator;
@@ -32,9 +33,9 @@ import com.speedment.runtime.field.method.ShortSetter;
 import com.speedment.runtime.field.predicate.FieldPredicate;
 import com.speedment.runtime.field.predicate.Inclusion;
 import com.speedment.runtime.typemapper.TypeMapper;
-import java.util.Set;
+import java.util.Collection;
 import java.util.function.Predicate;
-import javax.annotation.Generated;
+import static com.speedment.runtime.field.internal.util.CollectionUtil.collectionToSet;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -44,7 +45,7 @@ import static java.util.Objects.requireNonNull;
  * @author Emil Forslund
  * @since  3.0.0
  */
-@Generated(value = "Speedment")
+@GeneratedCode(value = "Speedment")
 public final class ShortFieldImpl<ENTITY, D> implements ShortField<ENTITY, D> {
     
     private final ColumnIdentifier<ENTITY> identifier;
@@ -53,7 +54,12 @@ public final class ShortFieldImpl<ENTITY, D> implements ShortField<ENTITY, D> {
     private final TypeMapper<D, Short> typeMapper;
     private final boolean unique;
     
-    public ShortFieldImpl(ColumnIdentifier<ENTITY> identifier, ShortGetter<ENTITY> getter, ShortSetter<ENTITY> setter, TypeMapper<D, Short> typeMapper, boolean unique) {
+    public ShortFieldImpl(
+            ColumnIdentifier<ENTITY> identifier,
+            ShortGetter<ENTITY> getter,
+            ShortSetter<ENTITY> setter,
+            TypeMapper<D, Short> typeMapper,
+            boolean unique) {
         this.identifier = requireNonNull(identifier);
         this.getter     = new GetShortImpl<>(this, getter);
         this.setter     = requireNonNull(setter);
@@ -122,8 +128,8 @@ public final class ShortFieldImpl<ENTITY, D> implements ShortField<ENTITY, D> {
     }
     
     @Override
-    public FieldPredicate<ENTITY> in(Set<Short> set) {
-        return new ShortInPredicate<>(this, set);
+    public FieldPredicate<ENTITY> in(Collection<Short> values) {
+        return new ShortInPredicate<>(this, collectionToSet(values));
     }
     
     @Override
@@ -147,7 +153,7 @@ public final class ShortFieldImpl<ENTITY, D> implements ShortField<ENTITY, D> {
     }
     
     @Override
-    public Predicate<ENTITY> notIn(Set<Short> set) {
-        return new ShortInPredicate<>(this, set).negate();
+    public Predicate<ENTITY> notIn(Collection<Short> values) {
+        return new ShortInPredicate<>(this, collectionToSet(values)).negate();
     }
 }

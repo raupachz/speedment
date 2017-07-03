@@ -19,7 +19,6 @@ package com.speedment.common.codegen.internal.model;
 import com.speedment.common.codegen.internal.util.Copier;
 import com.speedment.common.codegen.model.Class;
 import com.speedment.common.codegen.model.Constructor;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,34 +64,22 @@ public final class ClassImpl extends ClassOrInterfaceImpl<Class> implements Clas
 		this.constructors = Copier.copy(prototype.getConstructors());
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public Class setSupertype(Type superType) {
 		this.superType = superType;
 		return this;
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public Optional<Type> getSupertype() {
 		return Optional.ofNullable(superType);
 	}
 
-    /**
-     * {@inheritDoc}
-     */
 	@Override
 	public List<Constructor> getConstructors() {
 		return constructors;
 	}
-    
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
 	public ClassImpl copy() {
 		return new ClassImpl(this);
@@ -123,6 +110,4 @@ public final class ClassImpl extends ClassOrInterfaceImpl<Class> implements Clas
         }
         return Objects.equals(this.constructors, other.constructors);
     }
-
-
 }

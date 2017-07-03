@@ -14,25 +14,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.speedment.runtime.core.internal.code.model.java;
 
-import com.speedment.runtime.config.*;
+import com.speedment.runtime.config.Column;
+import com.speedment.runtime.config.Dbms;
+import com.speedment.runtime.config.PrimaryKeyColumn;
+import com.speedment.runtime.config.Project;
+import com.speedment.runtime.config.Schema;
+import com.speedment.runtime.config.Table;
 import com.speedment.runtime.config.trait.HasName;
 import com.speedment.runtime.core.Speedment;
 import com.speedment.runtime.core.component.ProjectComponent;
 import com.speedment.runtime.core.internal.AbstractApplicationMetadata;
 import com.speedment.runtime.core.internal.DefaultApplicationBuilder;
-import org.junit.Before;
-
 import java.util.Optional;
-import java.util.stream.Stream;
-
 import static java.util.stream.Collectors.joining;
+import java.util.stream.Stream;
+import org.junit.Before;
 
 /**
  *
@@ -67,11 +65,11 @@ public abstract class SimpleModel {
         project = speedment.getOrThrow(ProjectComponent.class).getProject();
         dbms = project.dbmses().findAny().get();
         schema = dbms.schemas().findAny().get();
-        table = schema.tables().filter(t -> TABLE_NAME.equals(t.getName())).findAny().get();
+        table = schema.tables().filter(t -> TABLE_NAME.equals(t.getId())).findAny().get();
         column = table.columns().findAny().get();
         pkColumn = table.primaryKeyColumns().findAny().get();
 
-        table2 = schema.tables().filter(t -> TABLE_NAME2.equals(t.getName())).findAny().get();
+        table2 = schema.tables().filter(t -> TABLE_NAME2.equals(t.getId())).findAny().get();
         column2 = table2.columns().findAny().get();
     }
     

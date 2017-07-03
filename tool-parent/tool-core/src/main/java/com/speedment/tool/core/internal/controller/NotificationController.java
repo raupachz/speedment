@@ -18,8 +18,7 @@ package com.speedment.tool.core.internal.controller;
 
 import com.speedment.tool.core.brand.Palette;
 import com.speedment.tool.core.exception.SpeedmentToolException;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
-import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import com.speedment.tool.core.resource.Icon;
 import javafx.animation.*;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -51,15 +50,28 @@ import static javafx.util.Duration.millis;
  */
 public final class NotificationController implements Initializable {
 
+    private static final int 
+        ENTER_SPEED = 350, 
+        EXIT_SPEED = 350,
+        ENTER_Y = 100;
+
+    private static final String NOTIFICATION_FXML = "/fxml/Notification.fxml";
+    private static final Duration TIMER = Duration.seconds(10);
+    
     private final String message;
-    private final FontAwesomeIcon icon;
+    private final Icon icon;
     private final Palette palette;
     private final Runnable onClose;
     private final AtomicBoolean destroyed;
     
-    private @FXML Label notification;
+    @FXML private Label notification;
     
-    private NotificationController(String message, FontAwesomeIcon icon, Palette palette, Runnable onClose) {
+    private NotificationController(
+        final String message, 
+        final Icon icon,
+        final Palette palette, 
+        final Runnable onClose
+    ) {
         this.message = requireNonNull(message);
         this.icon    = requireNonNull(icon);
         this.palette = requireNonNull(palette);
@@ -74,11 +86,11 @@ public final class NotificationController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         notification.setText(message);
-        notification.setGraphic(createGlyph());
+        notification.setGraphic(icon.view());
         notification.getStyleClass().add(palette.name().toLowerCase());
     }
     
-    public @FXML void close() {
+    @FXML public void close() {
         if (destroyed.compareAndSet(false, true)) {
             onClose.run();
             remove(notification);
@@ -103,7 +115,7 @@ public final class NotificationController implements Initializable {
         seq.play();
     }
 
-    static void showNotification(FlowPane area, String message, FontAwesomeIcon icon, Palette palette, Runnable onClose) {
+    static void showNotification(FlowPane area, String message, Icon icon, Palette palette, Runnable onClose) {
 
         final FXMLLoader loader = new FXMLLoader(NotificationController.class.getResource(NOTIFICATION_FXML));
         final AtomicReference<NotificationController> ref = new AtomicReference<>();
@@ -138,12 +150,6 @@ public final class NotificationController implements Initializable {
             ));
             timeline.play();
         });
-    }
-    
-    private FontAwesomeIconView createGlyph() {
-        final FontAwesomeIconView view = new FontAwesomeIconView(icon);
-        view.setSize(ICON_SIZE);
-        return view;
     }
     
     private static void remove(Node node) {
@@ -187,13 +193,4 @@ public final class NotificationController implements Initializable {
             );
         }
     }
-    
-    private final static int 
-        ENTER_SPEED = 350, 
-        EXIT_SPEED = 350,
-        ENTER_Y = 100;
-    
-    private final static String ICON_SIZE = "24";
-    private final static String NOTIFICATION_FXML = "/fxml/Notification.fxml";
-    private final static Duration TIMER = Duration.seconds(10);
 }

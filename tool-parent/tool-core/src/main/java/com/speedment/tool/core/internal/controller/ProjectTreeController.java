@@ -29,6 +29,11 @@ import com.speedment.tool.config.trait.HasIconPath;
 import com.speedment.tool.config.trait.HasNameProperty;
 import com.speedment.tool.core.component.UserInterfaceComponent;
 import com.speedment.tool.core.resource.SpeedmentIcon;
+import java.net.URL;
+import static java.util.Objects.requireNonNull;
+import java.util.ResourceBundle;
+import java.util.stream.Stream;
+import static javafx.application.Platform.runLater;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ListChangeListener;
@@ -37,19 +42,12 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.MenuItem;
+import static javafx.scene.control.SelectionMode.SINGLE;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
-import java.net.URL;
-import java.util.ResourceBundle;
-import java.util.stream.Stream;
-
-import static java.util.Objects.requireNonNull;
-import static javafx.application.Platform.runLater;
-import static javafx.scene.control.SelectionMode.SINGLE;
 
 /**
  *
@@ -57,13 +55,10 @@ import static javafx.scene.control.SelectionMode.SINGLE;
  */
 public final class ProjectTreeController implements Initializable {
 
-    private @Inject
-    UserInterfaceComponent ui;
-    private @Inject
-    EventComponent events;
+    private @Inject UserInterfaceComponent ui;
+    private @Inject EventComponent events;
 
-    private @FXML
-    TreeView<DocumentProperty> hierarchy;
+    private @FXML TreeView<DocumentProperty> hierarchy;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -96,13 +91,15 @@ public final class ProjectTreeController implements Initializable {
         hierarchy.getSelectionModel().select(root);
     }
 
-    private <P extends DocumentProperty & HasExpandedProperty> TreeItem<DocumentProperty> branch(P doc) {
+    private <P extends DocumentProperty & HasExpandedProperty>
+    TreeItem<DocumentProperty> branch(P doc) {
         requireNonNull(doc);
 
         final TreeItem<DocumentProperty> branch = new TreeItem<>(doc);
         branch.expandedProperty().bindBidirectional(doc.expandedProperty());
 
-        final ListChangeListener<? super DocumentProperty> onListChange = (ListChangeListener.Change<? extends DocumentProperty> change) -> {
+        final ListChangeListener<? super DocumentProperty> onListChange =
+            (ListChangeListener.Change<? extends DocumentProperty> change) -> {
             while (change.next()) {
                 if (change.wasAdded()) {
                     change.getAddedSubList().stream()
@@ -129,7 +126,11 @@ public final class ProjectTreeController implements Initializable {
             .forEachOrdered(branch.getChildren()::add);
 
         //  Listen to changes in the actual map
-        doc.childrenProperty().addListener((MapChangeListener.Change<? extends String, ? extends ObservableList<DocumentProperty>> change) -> {
+        doc.childrenProperty().addListener(
+            (MapChangeListener.Change<
+                ? extends String,
+                ? extends ObservableList<DocumentProperty>> change) -> {
+
             if (change.wasAdded()) {
 
                 // Listen for changes in the added list
@@ -152,9 +153,10 @@ public final class ProjectTreeController implements Initializable {
         return branch;
     }
 
-    private <DOC extends DocumentProperty> Stream<MenuItem> createDefaultContextMenu(TreeCell<DocumentProperty> treeCell, DOC node) {
+    private <DOC extends DocumentProperty> Stream<MenuItem>
+    createDefaultContextMenu(TreeCell<DocumentProperty> treeCell, DOC node) {
 
-        final MenuItem expandAll = new MenuItem("Expand All", SpeedmentIcon.BOOK_OPEN.view());
+        final MenuItem expandAll   = new MenuItem("Expand All", SpeedmentIcon.BOOK_OPEN.view());
         final MenuItem collapseAll = new MenuItem("Collapse All", SpeedmentIcon.BOOK.view());
 
         expandAll.setOnAction(ev -> {
@@ -184,7 +186,7 @@ public final class ProjectTreeController implements Initializable {
 
         private final UserInterfaceComponent ui;
 
-        public DocumentPropertyCell(UserInterfaceComponent ui) {
+        DocumentPropertyCell(UserInterfaceComponent ui) {
             this.ui = requireNonNull(ui);
 
             // Listener should be initiated with a listener attached
@@ -247,10 +249,8 @@ public final class ProjectTreeController implements Initializable {
                     textProperty().setValue(null);
                 }
 
-                if (item instanceof HasMainInterface) {
-                    ui.createContextMenu(this, item)
-                        .ifPresent(this::setContextMenu);
-                }
+                ui.createContextMenu(this, item)
+                    .ifPresent(this::setContextMenu);
 
                 if (HasEnabled.test(item)) {
                     enable();

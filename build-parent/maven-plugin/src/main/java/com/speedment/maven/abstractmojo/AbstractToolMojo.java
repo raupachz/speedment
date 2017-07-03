@@ -23,8 +23,7 @@ import com.speedment.maven.typemapper.Mapping;
 import com.speedment.runtime.core.ApplicationBuilder;
 import com.speedment.runtime.core.Speedment;
 import com.speedment.tool.core.MainApp;
-import static com.speedment.tool.core.internal.util.ConfigFileHelper.DEFAULT_CONFIG_LOCATION;
-import java.io.File;
+
 import java.util.function.Consumer;
 import javafx.application.Application;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -41,15 +40,15 @@ public abstract class AbstractToolMojo extends AbstractSpeedmentMojo {
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     private MavenProject mavenProject;
     
-    private @Parameter(defaultValue = "false") boolean debug;
+    private @Parameter(defaultValue = "${debug}") Boolean debug;
     private @Parameter(defaultValue = "${dbms.host}") String dbmsHost;
     private @Parameter(defaultValue = "${dbms.port}") int dbmsPort;
     private @Parameter(defaultValue = "${dbms.username}") String dbmsUsername;
     private @Parameter(defaultValue = "${dbms.password}") String dbmsPassword;
-    private @Parameter String[] components;
-    private @Parameter Mapping[] typeMappers;
+    private @Parameter(defaultValue = "${components}") String[] components;
+    private @Parameter(defaultValue = "${typeMappers}") String[] typeMappers;
     private @Parameter ConfigParam[] parameters;
-    private @Parameter(defaultValue = DEFAULT_CONFIG_LOCATION) File configFile;
+    private @Parameter(defaultValue = "${configFile}") String configFile;
 
     protected AbstractToolMojo() {}
     
@@ -61,7 +60,7 @@ public abstract class AbstractToolMojo extends AbstractSpeedmentMojo {
         MainApp.setInjector(injector);
         
         if (hasConfigFile()) {
-            Application.launch(MainApp.class, configFile.getAbsolutePath());
+            Application.launch(MainApp.class, configLocation().toAbsolutePath().toString());
         } else {
             Application.launch(MainApp.class);
         }
@@ -78,7 +77,7 @@ public abstract class AbstractToolMojo extends AbstractSpeedmentMojo {
     }
     
     @Override
-    protected Mapping[] typeMappers() {
+    protected String[] typeMappers() {
         return typeMappers;
     }
     
@@ -87,14 +86,13 @@ public abstract class AbstractToolMojo extends AbstractSpeedmentMojo {
         return parameters;
     }
     
-    @Override
-    protected File configLocation() {
+    public String getConfigFile() {
         return configFile;
     }
     
     @Override
     protected boolean debug() {
-        return debug;
+        return debug == null ? false: debug;
     }
 
     @Override

@@ -18,7 +18,7 @@ package com.speedment.runtime.core.component;
 
 import com.speedment.common.injector.annotation.InjectKey;
 import com.speedment.runtime.config.Dbms;
-
+import static java.util.Objects.requireNonNull;
 import java.util.Optional;
 
 /**
@@ -58,7 +58,9 @@ public interface PasswordComponent {
      * @param password  the password associated with that dbms
      */
     default void put(Dbms dbms, char[] password) {
-        put(dbms.getName(), password);
+        requireNonNull(dbms);
+        // password is nullable
+        put(dbms.getId(), password);
     }
     
     /**
@@ -77,6 +79,7 @@ public interface PasswordComponent {
      * @return      the associated password or empty
      */
     default Optional<char[]> get(Dbms dbms) {
-        return get(dbms.getName());
+        requireNonNull(dbms);
+        return get(dbms.getId());
     }
 }

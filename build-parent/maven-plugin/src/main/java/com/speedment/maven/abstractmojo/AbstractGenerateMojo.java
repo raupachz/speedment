@@ -20,13 +20,11 @@ import com.speedment.common.logger.Logger;
 import com.speedment.common.logger.LoggerManager;
 import com.speedment.generator.translator.TranslatorManager;
 import com.speedment.maven.parameter.ConfigParam;
-import com.speedment.maven.typemapper.Mapping;
 import com.speedment.runtime.config.Project;
 import com.speedment.runtime.core.ApplicationBuilder;
 import com.speedment.runtime.core.Speedment;
 import com.speedment.runtime.core.component.ProjectComponent;
-import static com.speedment.tool.core.internal.util.ConfigFileHelper.DEFAULT_CONFIG_LOCATION;
-import java.io.File;
+
 import java.util.function.Consumer;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -45,15 +43,15 @@ public abstract class AbstractGenerateMojo extends AbstractSpeedmentMojo {
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     private MavenProject mavenProject;
     
-    private @Parameter(defaultValue = "false") boolean debug;
+    private @Parameter(defaultValue = "${debug}") Boolean debug;
     private @Parameter(defaultValue = "${dbms.host}") String dbmsHost;
     private @Parameter(defaultValue = "${dbms.port}") int dbmsPort;
     private @Parameter(defaultValue = "${dbms.username}") String dbmsUsername;
     private @Parameter(defaultValue = "${dbms.password}") String dbmsPassword;
-    private @Parameter String[] components;
-    private @Parameter Mapping[] typeMappers;
+    private @Parameter(defaultValue = "${components}") String[] components;
+    private @Parameter(defaultValue = "${typeMappers}") String[] typeMappers;
     private @Parameter ConfigParam[] parameters;
-    private @Parameter(defaultValue = DEFAULT_CONFIG_LOCATION) File configFile;
+    private @Parameter(defaultValue = "${configFile}") String configFile;
 
     protected AbstractGenerateMojo() {}
     
@@ -61,8 +59,8 @@ public abstract class AbstractGenerateMojo extends AbstractSpeedmentMojo {
     
     @Override
     public void execute(Speedment speedment) throws MojoExecutionException, MojoFailureException {
-        getLog().info("Generating code using JSON configuration file: '" + configFile.getAbsolutePath() + "'.");
-
+        getLog().info("Generating code using JSON configuration file: '" + configLocation().toAbsolutePath() + "'.");
+        
         if (hasConfigFile()) {
             try {
                 final Project project = speedment.getOrThrow(ProjectComponent.class).getProject();
@@ -91,7 +89,7 @@ public abstract class AbstractGenerateMojo extends AbstractSpeedmentMojo {
     }
     
     @Override
-    protected Mapping[] typeMappers() {
+    protected String[] typeMappers() {
         return typeMappers;
     }
     
@@ -99,15 +97,14 @@ public abstract class AbstractGenerateMojo extends AbstractSpeedmentMojo {
     protected ConfigParam[] parameters() {
         return parameters;
     }
-
-    @Override
-    protected File configLocation() {
+    
+    public String getConfigFile() {
         return configFile;
     }
     
     @Override
     protected boolean debug() {
-        return debug;
+        return debug == null ? false: debug;
     }
     
     @Override
@@ -128,6 +125,10 @@ public abstract class AbstractGenerateMojo extends AbstractSpeedmentMojo {
     @Override
     protected String dbmsPassword() {
         return dbmsPassword;
+    }
+    
+    public void setTypeMappers(String[] typeMappers) {
+        this.typeMappers = typeMappers;
     }
 
 }

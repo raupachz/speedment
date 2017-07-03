@@ -1,13 +1,13 @@
 /**
- *
+ * 
  * Copyright (c) 2006-2017, Speedment, Inc. All Rights Reserved.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not
  * use this file except in compliance with the License. You may obtain a copy of
- * the License at:
- *
+ * the License at: 
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,6 +16,7 @@
  */
 package com.speedment.runtime.field;
 
+import com.speedment.common.annotation.GeneratedCode;
 import com.speedment.runtime.config.identifier.ColumnIdentifier;
 import com.speedment.runtime.field.internal.LongFieldImpl;
 import com.speedment.runtime.field.method.LongGetter;
@@ -23,7 +24,6 @@ import com.speedment.runtime.field.method.LongSetter;
 import com.speedment.runtime.field.trait.HasComparableOperators;
 import com.speedment.runtime.field.trait.HasLongValue;
 import com.speedment.runtime.typemapper.TypeMapper;
-import javax.annotation.Generated;
 
 /**
  * A field that represents a primitive {@code long} value.
@@ -36,7 +36,7 @@ import javax.annotation.Generated;
  * 
  * @see ReferenceField
  */
-@Generated(value = "Speedment")
+@GeneratedCode(value = "Speedment")
 public interface LongField<ENTITY, D> extends Field<ENTITY>, HasLongValue<ENTITY, D>, HasComparableOperators<ENTITY, Long> {
     
     /**
@@ -51,7 +51,12 @@ public interface LongField<ENTITY, D> extends Field<ENTITY>, HasLongValue<ENTITY
      * @param unique     if column only contains unique values
      * @return           the created field
      */
-    static <ENTITY, D> LongField<ENTITY, D> create(ColumnIdentifier<ENTITY> identifier, LongGetter<ENTITY> getter, LongSetter<ENTITY> setter, TypeMapper<D, Long> typeMapper, boolean unique) {
+    static <ENTITY, D> LongField<ENTITY, D> create(
+    ColumnIdentifier<ENTITY> identifier,
+            LongGetter<ENTITY> getter,
+            LongSetter<ENTITY> setter,
+            TypeMapper<D, Long> typeMapper,
+            boolean unique) {
         return new LongFieldImpl<>(
             identifier, getter, setter, typeMapper, unique
         );

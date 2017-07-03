@@ -19,32 +19,56 @@ package com.speedment.runtime.field.internal.comparator;
 import com.speedment.runtime.field.ComparableField;
 import com.speedment.runtime.field.comparator.FieldComparator;
 import com.speedment.runtime.field.comparator.NullOrder;
+
+import java.util.Objects;
+
 import static java.util.Objects.requireNonNull;
 
 /**
- *
+ * The default implementation of the {@link ReferenceFieldComparator} interface.
+ * 
  * @param <ENTITY>  the entity type
  * @param <D>       the database type
  * @param <V>       the value type
  * 
  * @author  Per Minborg
+ * @author  Emil Forslund
  * @since   2.2.0
  */
-public final class ReferenceFieldComparatorImpl<ENTITY, D, V extends Comparable<? super V>> implements ReferenceFieldComparator<ENTITY, D, V> {
+public final class ReferenceFieldComparatorImpl
+    <ENTITY, D, V extends Comparable<? super V>>
+extends AbstractFieldComparator<ENTITY>
+implements ReferenceFieldComparator<ENTITY, D, V> {
 
-    private final ComparableField<ENTITY, D, V> referenceField;
+    private final ComparableField<ENTITY, D, V> field;
     private final NullOrder nullOrder;
+    private final boolean reversed;
     
-    private boolean reversed;
+    public ReferenceFieldComparatorImpl(
+            final ComparableField<ENTITY, D, V> field,
+            final NullOrder nullOrder) {
 
-    public ReferenceFieldComparatorImpl(ComparableField<ENTITY, D, V> referenceField, NullOrder nullOrder) {
-        this.referenceField = referenceField;
-        this.nullOrder = nullOrder;
+        this(field, nullOrder, false);
+    }
+
+    ReferenceFieldComparatorImpl(
+            final ComparableField<ENTITY, D, V> field,
+            final NullOrder nullOrder,
+            final boolean reversed) {
+
+        this.field     = requireNonNull(field);
+        this.nullOrder = requireNonNull(nullOrder);
+        this.reversed  = reversed;
     }
 
     @Override
     public ComparableField<ENTITY, D, V> getField() {
-        return referenceField;
+        return field;
+    }
+
+    @Override
+    public NullOrder getNullOrder() {
+        return nullOrder;
     }
 
     @Override
@@ -53,61 +77,80 @@ public final class ReferenceFieldComparatorImpl<ENTITY, D, V extends Comparable<
     }
 
     @Override
-    public FieldComparator<ENTITY, V> reversed() {
-        reversed = !reversed;
-        return this;
+    public FieldComparator<ENTITY> reversed() {
+        return new ReferenceFieldComparatorImpl<>(field, nullOrder, !reversed);
     }
-    
-    // TODO: Imrpove performance of chained comparators.
 
     @Override
     public int compare(ENTITY o1, ENTITY o2) {
-        final V o1Value = referenceField.get(requireNonNull(o1));
-        final V o2Value = referenceField.get(requireNonNull(o2));
+        final V o1Value = field.get(requireNonNull(o1));
+        final V o2Value = field.get(requireNonNull(o2));
+        
         if (o1Value == null && o2Value == null) {
             if (NullOrder.NONE == nullOrder) {
-                throw new NullPointerException("Both fields were null and null fields not allowed");
+                throw new NullPointerException(
+                    "Both fields were null and null fields not allowed"
+                );
             }
             return 0;
-        }
-        if (o1Value == null) {
+        } else if (o1Value == null) {
             return forNull(Parameter.FIRST);
-        }
-        if (o2Value == null) {
+        } else if (o2Value == null) {
             return forNull(Parameter.SECOND);
         }
+        
         return applyReversed(o1Value.compareTo(o2Value));
     }
-
-    private enum Parameter {
-        FIRST, SECOND
+    
+    @Override
+    public int hashCode() {
+        return ((4049 + Objects.hashCode(field.identifier())) * 3109
+            + nullOrder.hashCode()) * 1039
+            + Boolean.hashCode(reversed);
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof FieldComparator)) return false;
+        
+        @SuppressWarnings("unchecked")
+        final FieldComparator<ENTITY> casted =
+            (FieldComparator<ENTITY>) obj;
+        
+        return reversed  == casted.isReversed()
+            && nullOrder == casted.getNullOrder()
+            && Objects.equals(
+                field.identifier(),
+                casted.getField().identifier()
+            );
+    }
+    
+    @Override
+    public String toString() {
+        return "(order by " + field.identifier() + " " +
+            (reversed ? "descending" : "ascending") + ")";
     }
 
     private int forNull(Parameter parameter) {
         final int firstOutcome = Parameter.FIRST.equals(parameter) ? -1 : 1;
-        final int lastOutcome = -firstOutcome;
+        final int lastOutcome  = -firstOutcome;
+        
         switch (nullOrder) {
-            case NONE:
-                throw new NullPointerException("A field was null and null fields not allowed");
-            case FIRST:
-                return applyReversed(firstOutcome);
-            case LAST:
-                return applyReversed(lastOutcome);
-            default:
-                throw new IllegalStateException("Illegal NullOrder");
+            case FIRST : return applyReversed(firstOutcome);
+            case LAST  : return applyReversed(lastOutcome);
+            case NONE  : throw new NullPointerException(
+                "A field was null and null fields not allowed"
+            );
+            default : throw new IllegalStateException("Illegal NullOrder");
         }
     }
 
     private int applyReversed(int compare) {
-        if (!reversed) {
-            return compare;
-        }
-        if (compare == 0) {
-            return 0;
-        } else if (compare > 0) {
-            return -1;
-        } else {
-            return 1;
-        }
+        return reversed ? -compare : compare;
+    }
+    
+    private enum Parameter {
+        FIRST, SECOND
     }
 }

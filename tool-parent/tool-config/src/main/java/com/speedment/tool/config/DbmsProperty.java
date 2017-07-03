@@ -24,10 +24,7 @@ import com.speedment.runtime.core.util.OptionalUtil;
 import com.speedment.tool.config.component.DocumentPropertyComponent;
 import com.speedment.tool.config.mutator.DbmsPropertyMutator;
 import com.speedment.tool.config.mutator.DocumentPropertyMutator;
-import com.speedment.tool.config.trait.HasAliasProperty;
-import com.speedment.tool.config.trait.HasEnabledProperty;
-import com.speedment.tool.config.trait.HasExpandedProperty;
-import com.speedment.tool.config.trait.HasNameProperty;
+import com.speedment.tool.config.trait.*;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
 import javafx.beans.binding.StringBinding;
@@ -48,14 +45,19 @@ import static com.speedment.runtime.core.internal.util.ImmutableListUtil.concat;
  * @since   2.3.0
  */
 public final class DbmsProperty extends AbstractChildDocumentProperty<Project, DbmsProperty> 
-    implements Dbms, HasEnabledProperty, HasExpandedProperty, HasNameProperty, HasAliasProperty {
+    implements Dbms, 
+    HasEnabledProperty, 
+    HasExpandedProperty, 
+    HasIdProperty,
+    HasNameProperty, 
+    HasAliasProperty {
 
     public DbmsProperty(Project parent) {
         super(parent);
     }
     
     public StringProperty typeNameProperty() {
-        return stringPropertyOf(TYPE_NAME, () -> Dbms.super.getTypeName());
+        return stringPropertyOf(TYPE_NAME, () -> getAsString(TYPE_NAME).orElse(null));
     }
 
     @Override

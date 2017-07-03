@@ -18,6 +18,7 @@ package com.speedment.runtime.config.mutator;
 
 
 import com.speedment.runtime.config.IndexColumn;
+import com.speedment.runtime.config.mutator.trait.HasIdMutator;
 import com.speedment.runtime.config.mutator.trait.HasNameMutator;
 import com.speedment.runtime.config.mutator.trait.HasOrderTypeMutator;
 import com.speedment.runtime.config.mutator.trait.HasOrdinalPositionMutator;
@@ -29,6 +30,7 @@ import com.speedment.runtime.config.mutator.trait.HasOrdinalPositionMutator;
  */
 
 public class IndexColumnMutator<DOC extends IndexColumn> extends DocumentMutatorImpl<DOC> implements 
+        HasIdMutator<DOC>,    
         HasNameMutator<DOC>,
         HasOrdinalPositionMutator<DOC>, 
         HasOrderTypeMutator<DOC> {

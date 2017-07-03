@@ -16,30 +16,14 @@
  */
 package com.speedment.generator.standard.entity;
 
-import static com.speedment.common.codegen.constant.DefaultAnnotationUsage.OVERRIDE;
 import com.speedment.common.codegen.constant.DefaultJavadocTag;
-import static com.speedment.common.codegen.constant.DefaultJavadocTag.PARAM;
-import static com.speedment.common.codegen.constant.DefaultJavadocTag.RETURN;
-import com.speedment.common.codegen.constant.DefaultType;
 import com.speedment.common.codegen.constant.SimpleParameterizedType;
 import com.speedment.common.codegen.constant.SimpleType;
-import com.speedment.common.codegen.model.Constructor;
+import com.speedment.common.codegen.model.*;
 import com.speedment.common.codegen.model.Enum;
-import com.speedment.common.codegen.model.EnumConstant;
-import com.speedment.common.codegen.model.Field;
-import com.speedment.common.codegen.model.File;
-import com.speedment.common.codegen.model.Import;
-import com.speedment.common.codegen.model.Interface;
-import com.speedment.common.codegen.model.Javadoc;
-import com.speedment.common.codegen.model.Method;
-import com.speedment.common.codegen.model.Value;
-import static com.speedment.common.codegen.util.Formatting.indent;
-import static com.speedment.common.codegen.util.Formatting.nl;
-import static com.speedment.common.codegen.util.Formatting.shortName;
 import com.speedment.common.function.OptionalBoolean;
 import com.speedment.common.injector.Injector;
 import com.speedment.common.injector.annotation.Inject;
-import static com.speedment.generator.standard.internal.util.ColumnUtil.usesOptional;
 import com.speedment.generator.standard.internal.util.EntityTranslatorSupport;
 import com.speedment.generator.standard.internal.util.FkHolder;
 import com.speedment.generator.translator.AbstractEntityAndManagerTranslator;
@@ -51,18 +35,26 @@ import com.speedment.runtime.config.Table;
 import com.speedment.runtime.config.identifier.ColumnIdentifier;
 import com.speedment.runtime.config.identifier.TableIdentifier;
 import com.speedment.runtime.config.util.DocumentDbUtil;
-import static com.speedment.runtime.config.util.DocumentUtil.Name.DATABASE_NAME;
-import static com.speedment.runtime.config.util.DocumentUtil.relativeName;
 import com.speedment.runtime.core.manager.Manager;
 import com.speedment.runtime.core.util.OptionalUtil;
 import com.speedment.runtime.typemapper.TypeMapper;
 import com.speedment.runtime.typemapper.primitive.PrimitiveTypeMapper;
+
 import java.lang.reflect.Type;
-import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
+
+import static com.speedment.common.codegen.constant.DefaultAnnotationUsage.OVERRIDE;
+import static com.speedment.common.codegen.constant.DefaultJavadocTag.PARAM;
+import static com.speedment.common.codegen.constant.DefaultJavadocTag.RETURN;
+import static com.speedment.common.codegen.constant.DefaultType.*;
+import static com.speedment.common.codegen.util.Formatting.*;
+import static com.speedment.generator.standard.internal.util.ColumnUtil.usesOptional;
+import static com.speedment.runtime.config.util.DocumentUtil.Name.DATABASE_NAME;
+import static com.speedment.runtime.config.util.DocumentUtil.relativeName;
+import static java.util.Objects.requireNonNull;
 
 /**
  *
@@ -71,10 +63,10 @@ import java.util.stream.Stream;
  */
 public final class GeneratedEntityTranslator extends AbstractEntityAndManagerTranslator<Interface> {
 
-    public final static String IDENTIFIER_NAME = "Identifier";
+    public static final String IDENTIFIER_NAME = "Identifier";
 
-    private @Inject Injector injector;
-    private @Inject TypeMapperComponent typeMappers;
+    @Inject private Injector injector;
+    @Inject private TypeMapperComponent typeMappers;
 
     public GeneratedEntityTranslator(Table table) {
         super(table, Interface::of);
@@ -100,15 +92,15 @@ public final class GeneratedEntityTranslator extends AbstractEntityAndManagerTra
             )
             .add(Method.of("getDbmsName", String.class).public_()
                 .add(OVERRIDE)
-                .add("return \"" + getSupport().dbmsOrThrow().getName() + "\";")
+                .add(returnString(getSupport().dbmsOrThrow().getId()))
             )
             .add(Method.of("getSchemaName", String.class).public_()
                 .add(OVERRIDE)
-                .add("return \"" + getSupport().schemaOrThrow().getName() + "\";")
+                .add(returnString(getSupport().schemaOrThrow().getId()))
             )
             .add(Method.of("getTableName", String.class).public_()
                 .add(OVERRIDE)
-                .add("return \"" + getSupport().tableOrThrow().getName() + "\";")
+                .add(returnString(getSupport().tableOrThrow().getId()))
             )
             .add(Method.of("getColumnName", String.class).public_()
                 .add(OVERRIDE)
@@ -149,7 +141,7 @@ public final class GeneratedEntityTranslator extends AbstractEntityAndManagerTra
             /**
              * Setters
              */
-            .forEveryColumn((intrf, col) -> {
+            .forEveryColumn((intrf, col) -> 
                 intrf.add(Method.of(SETTER_METHOD_PREFIX + getSupport().typeName(col), getSupport().entityType())
                     .add(Field.of(getSupport().variableName(col), typeMappers.get(col).getJavaType(col)))
                     .set(Javadoc.of(
@@ -161,13 +153,13 @@ public final class GeneratedEntityTranslator extends AbstractEntityAndManagerTra
                     )
                         .add(PARAM.setValue(getSupport().variableName(col)).setText("to set of this " + getSupport().entityName()))
                         .add(RETURN.setText("this " + getSupport().entityName() + " instance")))
-                );
-            })
+                )
+            )
             
             /**
              * Finders
              */
-            .forEveryColumn((intrf, col) -> {
+            .forEveryColumn((intrf, col) -> 
                 EntityTranslatorSupport.getForeignKey(
                     getSupport().tableOrThrow(), col
                 ).ifPresent(fkc -> {
@@ -178,7 +170,7 @@ public final class GeneratedEntityTranslator extends AbstractEntityAndManagerTra
 
                     intrf.add(Method.of(FINDER_METHOD_PREFIX + getSupport().typeName(col),
                         col.isNullable()
-                            ? DefaultType.optional(fuSupport.entityType())
+                            ? optional(fuSupport.entityType())
                             : fuSupport.entityType()
                     )
                         .set(Javadoc.of(
@@ -193,8 +185,8 @@ public final class GeneratedEntityTranslator extends AbstractEntityAndManagerTra
                             Manager.class, fuSupport.entityType()
                         )))
                     );
-                });
-            })
+                })
+            )
             
             /**
              * Fields
@@ -212,7 +204,7 @@ public final class GeneratedEntityTranslator extends AbstractEntityAndManagerTra
                 file.add(Import.of(entityType));
                 
                 final String constant = getSupport().namer().javaStaticFieldName(col.getJavaName());
-                identifierEnum.add(EnumConstant.of(constant).add(Value.ofText(col.getName())));
+                identifierEnum.add(EnumConstant.of(constant).add(Value.ofText(col.getId())));
 
                 // Begin building the field value parameters.
                 final Stream.Builder<String> fieldParams = Stream.builder();
@@ -257,14 +249,14 @@ public final class GeneratedEntityTranslator extends AbstractEntityAndManagerTra
                     fieldParams.add("TypeMapper.identity(), ");
                     file.add(Import.of(TypeMapper.class));
                 }
-                
+
                 // Add the 'unique' boolean to the end
                 fieldParams.add(Boolean.toString(DocumentDbUtil.isUnique(col)));
 
-                intrf.add(Field.of(getSupport().namer().javaStaticFieldName(col.getJavaName()), ref.type)
+                intrf.add(Field.of(getSupport().namer().javaStaticFieldName(col.getJavaName()), ref.getType())
                     .final_()
                     .set(Value.ofReference(
-                        shortName(ref.type.getTypeName()) + ".create(" + 
+                        shortName(ref.getType().getTypeName()) + ".create(" +
                         nl() + indent(
                             fieldParams.build().toArray(String[]::new)
                         ) + nl() + ")"
@@ -282,7 +274,7 @@ public final class GeneratedEntityTranslator extends AbstractEntityAndManagerTra
         return "The generated base for the {@link "
             + getSupport().entityType().getTypeName()
             + "}-interface representing entities of the {@code "
-            + getDocument().getName() + "}-table in the database.";
+            + getDocument().getId() + "}-table in the database.";
     }
 
     @Override
@@ -300,21 +292,40 @@ public final class GeneratedEntityTranslator extends AbstractEntityAndManagerTra
         final Type type = typeMappers.get(col).getJavaType(col);
 
         if (usesOptional(col)) {
-            if (type.equals(Integer.class)) {
-                retType = OptionalInt.class;
-            } else if (type.equals(Long.class)) {
-                retType = OptionalLong.class;
-            } else if (type.equals(Double.class)) {
-                retType = OptionalDouble.class;
-            } else if (type.equals(Boolean.class)) {
-                retType = OptionalBoolean.class;
+            if (isPrimitive(type)) {
+                if (type.equals(int.class)) {
+                    retType = OptionalInt.class;
+                } else if (type.equals(long.class)) {
+                    retType = OptionalLong.class;
+                } else if (type.equals(double.class)) {
+                    retType = OptionalDouble.class;
+                } else if (type.equals(boolean.class)) {
+                    retType = OptionalBoolean.class;
+                } else {
+                    retType = optional(wrapperFor(type)); // Optional<Float>
+                }
             } else {
-                retType = SimpleParameterizedType.create(Optional.class, type);
+                if (type.equals(Integer.class)) {
+                    retType = OptionalInt.class;
+                } else if (type.equals(Long.class)) {
+                    retType = OptionalLong.class;
+                } else if (type.equals(Double.class)) {
+                    retType = OptionalDouble.class;
+                } else if (type.equals(Boolean.class)) {
+                    retType = OptionalBoolean.class;
+                } else {
+                    retType = optional(type);
+                }
             }
         } else {
             retType = type;
         }
 
         return retType;
+    }
+    
+    private String returnString(String s) {
+        requireNonNull(s);
+        return "return \""+s+"\";";
     }
 }

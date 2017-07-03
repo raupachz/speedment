@@ -1,13 +1,13 @@
 /**
- *
+ * 
  * Copyright (c) 2006-2017, Speedment, Inc. All Rights Reserved.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not
  * use this file except in compliance with the License. You may obtain a copy of
- * the License at:
- *
+ * the License at: 
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,9 +16,11 @@
  */
 package com.speedment.runtime.field.internal.comparator;
 
-import com.speedment.runtime.field.CharField;
-import java.util.Comparator;
-import javax.annotation.Generated;
+import com.speedment.common.annotation.GeneratedCode;
+import com.speedment.runtime.field.comparator.FieldComparator;
+import com.speedment.runtime.field.comparator.NullOrder;
+import com.speedment.runtime.field.trait.HasCharValue;
+import java.util.Objects;
 import static com.speedment.common.invariant.NullUtil.requireNonNulls;
 import static java.util.Objects.requireNonNull;
 
@@ -29,20 +31,31 @@ import static java.util.Objects.requireNonNull;
  * @author Emil Forslund
  * @since  3.0.0
  */
-@Generated(value = "Speedment")
-public final class CharFieldComparatorImpl<ENTITY, D> implements CharFieldComparator<ENTITY, D> {
+@GeneratedCode(value = "Speedment")
+public final class CharFieldComparatorImpl<ENTITY, D> 
+extends AbstractFieldComparator<ENTITY> 
+implements CharFieldComparator<ENTITY, D> {
     
-    private final CharField<ENTITY, D> field;
-    private boolean reversed;
+    private final HasCharValue<ENTITY, D> field;
+    private final boolean reversed;
     
-    public CharFieldComparatorImpl(CharField<ENTITY, D> field) {
+    public CharFieldComparatorImpl(HasCharValue<ENTITY, D> field) {
+        this(field, false);
+    }
+    
+    CharFieldComparatorImpl(HasCharValue<ENTITY, D> field, boolean reversed) {
         this.field    = requireNonNull(field);
-        this.reversed = false;
+        this.reversed = reversed;
     }
     
     @Override
-    public CharField<ENTITY, D> getField() {
+    public HasCharValue<ENTITY, D> getField() {
         return field;
+    }
+    
+    @Override
+    public NullOrder getNullOrder() {
+        return NullOrder.NONE;
     }
     
     @Override
@@ -51,9 +64,8 @@ public final class CharFieldComparatorImpl<ENTITY, D> implements CharFieldCompar
     }
     
     @Override
-    public Comparator<ENTITY> reversed() {
-        reversed = !reversed;
-        return this;
+    public FieldComparator<ENTITY> reversed() {
+        return new CharFieldComparatorImpl<>(field, !reversed);
     }
     
     @Override
@@ -61,7 +73,35 @@ public final class CharFieldComparatorImpl<ENTITY, D> implements CharFieldCompar
         requireNonNulls(first, second);
         final char a = field.getAsChar(first);
         final char b = field.getAsChar(second);
-        return applyReversed(a - b);
+        return applyReversed(Character.compare(a, b));
+    }
+    
+    @Override
+    public int hashCode() {
+        return (4049 + Objects.hashCode(this.field.identifier())) * 3109
+            + Boolean.hashCode(reversed);
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof FieldComparator)) return false;
+        
+        @SuppressWarnings("unchecked")
+        final FieldComparator<ENTITY> casted =
+            (FieldComparator<ENTITY>) obj;
+        
+        return reversed == casted.isReversed()
+            && Objects.equals(
+                field.identifier(),
+                casted.getField().identifier()
+            );
+    }
+    
+    @Override
+    public String toString() {
+        return "(order by " + field.identifier() + " " +
+            (reversed ? "descending" : "ascending") + ")";
     }
     
     private int applyReversed(int compare) {

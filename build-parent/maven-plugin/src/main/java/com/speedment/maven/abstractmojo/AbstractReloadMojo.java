@@ -21,8 +21,7 @@ import com.speedment.maven.typemapper.Mapping;
 import com.speedment.runtime.core.ApplicationBuilder;
 import com.speedment.runtime.core.Speedment;
 import com.speedment.tool.core.internal.util.ConfigFileHelper;
-import static com.speedment.tool.core.internal.util.ConfigFileHelper.DEFAULT_CONFIG_LOCATION;
-import java.io.File;
+
 import java.util.function.Consumer;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -41,27 +40,28 @@ public abstract class AbstractReloadMojo extends AbstractSpeedmentMojo {
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
     private MavenProject mavenProject;
     
-    private @Parameter(defaultValue = "false") boolean debug;
+    private @Parameter(defaultValue = "${debug}") Boolean debug;
     private @Parameter(defaultValue = "${dbms.host}") String dbmsHost;
     private @Parameter(defaultValue = "${dbms.port}") int dbmsPort;
     private @Parameter(defaultValue = "${dbms.username}") String dbmsUsername;
     private @Parameter(defaultValue = "${dbms.password}") String dbmsPassword;
-    private @Parameter String[] components;
-    private @Parameter Mapping[] typeMappers;
+    private @Parameter(defaultValue = "${components}") String[] components;
+    private @Parameter(defaultValue = "${typeMappers}") String[] typeMappers;
     private @Parameter ConfigParam[] parameters;
-    private @Parameter(defaultValue = DEFAULT_CONFIG_LOCATION) File configFile;
-    
+    private @Parameter(defaultValue = "${configFile}") String configFile;
+        
     protected AbstractReloadMojo() {}
     
     protected AbstractReloadMojo(Consumer<ApplicationBuilder<?, ?>> configurer) { super(configurer);}
     
     @Override
     protected void execute(Speedment speedment) throws MojoExecutionException, MojoFailureException {
-        getLog().info("Saving default configuration from database to '" + configFile.getAbsolutePath() + "'.");
+        getLog().info("Saving default configuration from database to '" + configLocation().toAbsolutePath() + "'.");
         
         final ConfigFileHelper helper = speedment.getOrThrow(ConfigFileHelper.class);
         
         try {
+            helper.setCurrentlyOpenFile(configLocation().toFile());
             helper.loadFromDatabaseAndSaveToFile();
         } catch (final Exception ex) {
             final String err = "An error occured while reloading.";
@@ -77,11 +77,10 @@ public abstract class AbstractReloadMojo extends AbstractSpeedmentMojo {
     
     @Override
     protected boolean debug() {
-        return debug;
+        return debug == null ? false: debug;
     }
 
-    @Override
-    protected File configLocation() {
+    public String getConfigFile() {
         return configFile;
     }
 
@@ -91,7 +90,7 @@ public abstract class AbstractReloadMojo extends AbstractSpeedmentMojo {
     }
     
     @Override
-    protected Mapping[] typeMappers() {
+    protected String[] typeMappers() {
         return typeMappers;
     }
     

@@ -19,6 +19,7 @@ package com.speedment.runtime.config;
 import com.speedment.runtime.config.mutator.DocumentMutator;
 import com.speedment.runtime.config.mutator.ForeignKeyColumnMutator;
 import com.speedment.runtime.config.trait.HasColumn;
+import com.speedment.runtime.config.trait.HasId;
 import com.speedment.runtime.config.trait.HasMainInterface;
 import com.speedment.runtime.config.trait.HasMutator;
 import com.speedment.runtime.config.trait.HasName;
@@ -38,6 +39,7 @@ import java.util.Optional;
 public interface ForeignKeyColumn extends
     Document,
     HasParent<ForeignKey>,
+    HasId,    
     HasName,
     HasOrdinalPosition,
     HasColumn,
@@ -102,7 +104,7 @@ public interface ForeignKeyColumn extends
             .findFirst();
 
         return schema.flatMap(s -> s.tables()
-            .filter(tab -> tab.getName().equals(getForeignTableName()))
+            .filter(tab -> tab.getId().equals(getForeignTableName()))
             .findAny()
         );
     }
@@ -116,7 +118,7 @@ public interface ForeignKeyColumn extends
     default Optional<? extends Column> findForeignColumn() {
         return findForeignTable()
             .flatMap(table -> table.columns()
-                .filter(col -> col.getName().equals(getForeignColumnName()))
+                .filter(col -> col.getId().equals(getForeignColumnName()))
                 .findAny()
             );
     }

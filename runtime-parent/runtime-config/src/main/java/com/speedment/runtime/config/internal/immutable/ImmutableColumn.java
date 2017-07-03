@@ -20,10 +20,12 @@ import com.speedment.runtime.config.Column;
 import com.speedment.runtime.config.Table;
 import com.speedment.runtime.config.internal.ColumnImpl;
 import com.speedment.runtime.config.trait.HasNullable;
-import static com.speedment.runtime.config.util.DocumentUtil.toStringHelper;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+
+import static com.speedment.runtime.config.util.DocumentUtil.toStringHelper;
 
 /**
  *
@@ -32,9 +34,11 @@ import java.util.OptionalInt;
 public final class ImmutableColumn extends ImmutableDocument implements Column {
 
     private final transient boolean enabled;
+    private final transient String id;
     private final transient String name;
     private final transient Optional<String> alias;
     private final transient boolean nullable;
+    private final transient int ordinalPosition;
     private final transient HasNullable.ImplementAs nullableImplementation;
     private final transient boolean autoincrement;
     private final transient Optional<String> typeMapper;
@@ -50,6 +54,7 @@ public final class ImmutableColumn extends ImmutableDocument implements Column {
         final Column prototype = new ColumnImpl(parent, data);
         
         this.enabled                = prototype.isEnabled();
+        this.id                     = prototype.getId();
         this.name                   = prototype.getName();
         this.alias                  = prototype.getAlias();
         this.nullable               = prototype.isNullable();
@@ -61,11 +66,17 @@ public final class ImmutableColumn extends ImmutableDocument implements Column {
         this.enumConstants          = prototype.getEnumConstants();
         this.decimalDigits          = prototype.getDecimalDigits();
         this.columnSize             = prototype.getColumnSize();
+        this.ordinalPosition        = prototype.getOrdinalPosition();
     }
 
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override
@@ -86,6 +97,11 @@ public final class ImmutableColumn extends ImmutableDocument implements Column {
     @Override
     public ImplementAs getNullableImplementation() {
         return nullableImplementation;
+    }
+
+    @Override
+    public int getOrdinalPosition() {
+        return ordinalPosition;
     }
 
     @Override

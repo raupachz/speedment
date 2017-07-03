@@ -44,17 +44,17 @@ public final class ApplicationBuilderTranslator extends AbstractJavaClassTransla
     @Override
     protected Class makeCodeGenModel(File file) {
         return newBuilder(file, getClassOrInterfaceName())
-            .forEveryProject((clazz, project) -> {
+            .forEveryProject((clazz, project) -> 
                 clazz.public_().final_()
-                    .setSupertype(generatedBuilderType());
-            }).build();
+                    .setSupertype(generatedBuilderType())
+            ).build();
     }
 
     @Override
     protected String getJavadocRepresentText() {
         return "The default {@link " + ApplicationBuilder.class.getName() + 
             "} implementation class for the {@link " + Project.class.getName() + 
-            "} named " + getSupport().projectOrThrow().getName() + ".";
+            "} named " + getSupport().projectOrThrow().getId() + ".";
     }
     
     private Type generatedBuilderType() {

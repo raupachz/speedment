@@ -1,13 +1,13 @@
 /**
- *
+ * 
  * Copyright (c) 2006-2017, Speedment, Inc. All Rights Reserved.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not
  * use this file except in compliance with the License. You may obtain a copy of
- * the License at:
- *
+ * the License at: 
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -16,13 +16,13 @@
  */
 package com.speedment.runtime.field.trait;
 
+import com.speedment.common.annotation.GeneratedCode;
 import com.speedment.runtime.field.Field;
 import com.speedment.runtime.field.internal.method.SetToShortImpl;
 import com.speedment.runtime.field.method.GetShort;
 import com.speedment.runtime.field.method.SetToShort;
 import com.speedment.runtime.field.method.ShortSetter;
 import com.speedment.runtime.typemapper.TypeMapper;
-import javax.annotation.Generated;
 
 /**
  * A representation of an Entity field that is a primitive {@code short} type.
@@ -33,7 +33,7 @@ import javax.annotation.Generated;
  * @author Emil Forslund
  * @since  3.0.0
  */
-@Generated(value = "Speedment")
+@GeneratedCode(value = "Speedment")
 public interface HasShortValue<ENTITY, D> extends Field<ENTITY> {
     
     @Override

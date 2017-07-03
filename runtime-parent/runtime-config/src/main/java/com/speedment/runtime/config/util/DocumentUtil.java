@@ -22,9 +22,13 @@ import com.speedment.runtime.config.internal.util.Trees;
 import com.speedment.runtime.config.trait.HasAlias;
 import com.speedment.runtime.config.trait.HasName;
 import com.speedment.runtime.config.trait.HasParent;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import static java.util.Objects.requireNonNull;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Optional;
+import java.util.StringJoiner;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -46,15 +50,17 @@ public final class DocumentUtil {
     /**
      * Traverses all the documents at and below the specified document in a
      * tree. Traversal is done depth first. The order of sub-document traversal
-     * within a specific Document is unspecified (For example, a table's columns
+     * within a specific Document is unspecified (For example, a tables columns
      * may be traversed in any order).
      *
-     * @param document the document to start at
-     * @return stream of descendants
+     * @param document  the document to start at
+     * @return          stream of descendants
      */
     @SuppressWarnings("unchecked")
     public static Stream<? extends Document> traverseOver(Document document) {
+        
         requireNonNull(document);
+        
         return Trees.traverse(
             document,
             d -> d.children(),
@@ -68,16 +74,16 @@ public final class DocumentUtil {
      * specified type and the root was reached, an empty {@code Optional} is
      * returned.
      *
-     * @param <E> ancestor type
-     * @param document the starting point
-     * @param clazz the ancestor type to look for
-     * @return first ancestor found or empty
+     * @param <E>       ancestor type
+     * @param document  the starting point
+     * @param clazz     the ancestor type to look for
+     * @return          first ancestor found or empty
      */
     public static <E extends Document> Optional<E> ancestor(
-        final Document document,
-        final Class<E> clazz
-    ) {
-    requireNonNull(document);
+            final Document document,
+            final Class<E> clazz) {
+        
+        requireNonNull(document);
         requireNonNull(clazz);
         return document.ancestors()
             .filter(clazz::isInstance)
@@ -97,8 +103,8 @@ public final class DocumentUtil {
     @SuppressWarnings("unchecked")
     public static <E extends Document> Stream<E> childrenOf(
         final Document document,
-        final BiFunction<Document, Map<String, Object>, E> childConstructor
-    ) {
+        final BiFunction<Document, Map<String, Object>, E> childConstructor) {
+        
         requireNonNull(document);
         requireNonNull(childConstructor);
         
@@ -128,12 +134,14 @@ public final class DocumentUtil {
         final List<Map<String, Object>> children = parent.get(key)
             .map(DocumentUtil::castToDocumentList)
             .orElseGet(() -> {
-                final List<Map<String, Object>> list = new CopyOnWriteArrayList<>();
+                final List<Map<String, Object>> list = 
+                    new CopyOnWriteArrayList<>();
+                
                 parent.put(key, list);
                 return list;
             });
 
-        final Map<String, Object> child = new ConcurrentHashMap<>();
+        final Map<String, Object> child = new ConcurrentSkipListMap<>();
         children.add(child);
 
         return child;
@@ -242,14 +250,15 @@ public final class DocumentUtil {
      * @return            the relative name for this Node from the point 
      *                    given by the parent Class
      */
-    public static <T extends Document & HasName, D extends Document & HasName> String relativeName(
-        final D document,
-        final Class<T> from,
-        final Name name,
-        final CharSequence separator,
-        final Function<String, String> nameMapper
-    ) {
-    requireNonNull(document);
+    public static <T extends Document & HasName, D extends Document & HasName> 
+    String relativeName(
+            final D document,
+            final Class<T> from,
+            final Name name,
+            final CharSequence separator,
+            final Function<String, String> nameMapper) {
+        
+        requireNonNull(document);
         requireNonNull(from);
         requireNonNull(nameMapper);
         
@@ -289,11 +298,11 @@ public final class DocumentUtil {
      * Creates a deep copy of the raw map in the specified document and wrap it
      * in a new typed document using the specified constructor.
      *
-     * @param <P> the parent type
-     * @param <DOC> the document type
-     * @param document the document
-     * @param constructor the document constructor
-     * @return the copy
+     * @param <P>          the parent type
+     * @param <DOC>        the document type
+     * @param document     the document
+     * @param constructor  the document constructor
+     * @return             the copy
      */
     public static <P extends Document, DOC extends Document & HasParent<P>>
         DOC deepCopy(DOC document, BiFunction<P, Map<String, Object>, DOC> constructor) {
@@ -309,8 +318,8 @@ public final class DocumentUtil {
      * found on a specified key in a specified document.
      *
      * @param document the document
-     * @param key the key
-     * @return the {@code Exception} supplier
+     * @param key      the key
+     * @return         the {@code Exception} supplier
      */
     public static Supplier<NoSuchElementException> newNoSuchElementExceptionFor(
         Document document,
@@ -330,7 +339,7 @@ public final class DocumentUtil {
      * Helps documents to format a {@code toString()}-method.
      *
      * @param document the document
-     * @return the string
+     * @return         the string
      */
     public static String toStringHelper(Document document) {
 
@@ -359,7 +368,7 @@ public final class DocumentUtil {
     }
 
     private static <K, V> Map<K, V> deepCopyMap(Map<K, V> original) {
-        final Map<K, V> copy = new ConcurrentHashMap<>();
+        final Map<K, V> copy = new ConcurrentSkipListMap<>();
 
         MapStream.of(original)
             .mapValue(DocumentUtil::deepCopyObject)

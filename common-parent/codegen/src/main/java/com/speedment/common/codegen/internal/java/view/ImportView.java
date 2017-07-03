@@ -34,16 +34,14 @@ import java.util.Optional;
  */
 public final class ImportView implements Transform<Import, String> {
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Optional<String> transform(Generator gen, Import model) {
         requireNonNulls(gen, model);
         final String name = stripGenerics(model.getType().getTypeName())
             .replace('$', '.');
 
-        if (shouldImport(gen, model.getType())) {
+        if (!model.getModifiers().isEmpty()
+        ||   shouldImport(gen, model.getType())) {
             return Optional.of(
                 "import "
                 + gen.onEach(model.getModifiers()).collect(joinIfNotEmpty(" ", "", " "))

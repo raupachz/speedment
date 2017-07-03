@@ -21,6 +21,7 @@ import com.speedment.runtime.core.exception.SpeedmentException;
 import com.speedment.runtime.core.internal.util.LongUtil;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.*;
@@ -89,7 +90,7 @@ public final class StandardJavaTypeMapping {
         ),
         
         new JavaTypeMappingImpl<>(
-            String.class, "String", Function.identity(), l -> Optional.ofNullable(l).map(lo -> lo.toString()).orElse(null)
+            String.class, "String", Function.identity(), l -> Optional.ofNullable(l).map(Object::toString).orElse(null)
         ),
         
         new JavaTypeMappingImpl<>(
@@ -105,7 +106,11 @@ public final class StandardJavaTypeMapping {
         ),
         
         new JavaTypeMappingImpl<>(
-            BigDecimal.class, "BigDecimal", s -> new BigDecimal(s), l -> LongUtil.cast(l, BigDecimal.class)
+            BigDecimal.class, "BigDecimal", BigDecimal::new, l -> LongUtil.cast(l, BigDecimal.class)
+        ),
+        
+        new JavaTypeMappingImpl<>(
+            BigInteger.class, "Object", BigInteger::new, l -> LongUtil.cast(l, BigInteger.class)
         ),
         
         new JavaTypeMappingImpl<>(
